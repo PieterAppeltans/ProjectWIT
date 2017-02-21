@@ -2,11 +2,25 @@
 #define NODE_HPP 23
 class Node{
 public:
-  Node(double r,double z)
-  :r_(r),z_(z)
-  {}
+  Node(int id,double r,double z)
+  :id_(id),r_(r),z_(z)
+  {};
+  Node(Node const& node)
+  :id_(node.id_),r_(node.r_),z_(node.z_)
+  {};
+  void operator= (Node const& n)
+  {
+    id_= n.id_;
+    r_ = n.r_;
+    z_ = n.z_;
+  }
+  int id(){
+    return id_;
+  }
 private:
+  int id_;
   double r_;
   double z_;
+
 };
 #endif
