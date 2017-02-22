@@ -17,7 +17,7 @@ namespace mesh {
         std::ifstream infile("../triangle/pear.1.ele");
         std::string line;
         int a, b, c, d;
-        int line_nb = 1;
+        int line_nb = 0;
         std::getline(infile, line);
         std::istringstream iss(line);
         iss >> a >> b >> c;
@@ -47,7 +47,7 @@ namespace mesh {
         std::ifstream infile("../triangle/pear.1.node");
         std::string line;
         int a, b, c, d;
-        int line_nb = 1;
+        int line_nb = 0;
         std::getline(infile, line);
         std::istringstream iss(line);
         iss >> a >> b >> c;

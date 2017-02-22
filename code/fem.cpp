@@ -2,6 +2,7 @@
 #include "mesh_reader.hpp"
 #include "node.hpp"
 
+#include <iostream>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
@@ -17,6 +18,10 @@ void  f();
 void local(Triangle triangle, matrix<double> M);
 
 int main(){
+    matrix<double> triangles = mesh::read_triangles();
+    matrix<double> vertices = mesh::read_vertices();
+    std::cout << triangles << std::endl;
+    std::cout << vertices << std::endl;
     return 0;
 }
 
