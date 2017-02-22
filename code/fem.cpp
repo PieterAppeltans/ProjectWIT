@@ -10,7 +10,7 @@
 
 using namespace boost::numeric::ublas;
 
-/* COMPILE WITH: gcc fem.cpp -std=c++11 -lstdc++
+/* COMPILE WITH: g++ -Wall -std=c++14 -O3 -lstdc++ -o fem fem.cpp
 mesh_reader.hpp needs those two flags for reading files */
 
 void A(Triangle triangles[], int nb_triangles);
