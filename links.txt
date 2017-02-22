@@ -16,3 +16,5 @@ http://www-eng.lbl.gov/~shuman/NEXT/MATERIALS&COMPONENTS/Xe_damage/Crank-The-Mat
 #Exact solution
 http://www-eng.lbl.gov/~shuman/NEXT/MATERIALS&COMPONENTS/Xe_damage/Crank-The-Mathematics-of-Diffusion.pdf
 p69
+# Diffusion in cilinder
+http://www.ewp.rpi.edu/hartford/~ernesto/S2006/CHT/Notes/ch03.pdf
