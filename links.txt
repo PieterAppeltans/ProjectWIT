@@ -18,3 +18,6 @@ http://www-eng.lbl.gov/~shuman/NEXT/MATERIALS&COMPONENTS/Xe_damage/Crank-The-Mat
 p69
 # Diffusion in cilinder
 http://www.ewp.rpi.edu/hartford/~ernesto/S2006/CHT/Notes/ch03.pdf
+
+#diffusion
+https://etd.ohiolink.edu/rws_etd/document/get/ohiou1176840295/inline
