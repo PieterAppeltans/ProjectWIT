@@ -5,3 +5,8 @@ uBLAS
 Boost.org
 Eigen
 glas2
+
+# triangular mesh generator
+http://www.cs.cmu.edu/~quake/triangle.html
+# uBLAS lineaire algebra libary
+http://www.boost.org/doc/libs/1_63_0/libs/numeric/ublas/doc/index.html
