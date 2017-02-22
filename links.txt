@@ -10,3 +10,9 @@ glas2
 http://www.cs.cmu.edu/~quake/triangle.html
 # uBLAS lineaire algebra libary
 http://www.boost.org/doc/libs/1_63_0/libs/numeric/ublas/doc/index.html
+
+http://www-eng.lbl.gov/~shuman/NEXT/MATERIALS&COMPONENTS/Xe_damage/Crank-The-Mathematics-of-Diffusion.pdf
+
+#Exact solution
+http://www-eng.lbl.gov/~shuman/NEXT/MATERIALS&COMPONENTS/Xe_damage/Crank-The-Mathematics-of-Diffusion.pdf
+p69
