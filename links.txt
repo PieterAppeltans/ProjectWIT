@@ -1,1 +1,7 @@
 http://www.cs.cmu.edu/~quake/triangle.html -> triangular mesh generator
+
+PACKAGES FOR MATRIX OPERATIONS IN C++:
+uBLAS
+Boost.org
+Eigen
+glas2
