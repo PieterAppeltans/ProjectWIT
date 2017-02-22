@@ -1,12 +1,20 @@
 #include "triangle.hpp"
+#include "mesh_reader.hpp"
 #include "node.hpp"
+
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
-void A(Triangle triangles[],int nb_triangles);
+
+using namespace boost::numeric::ublas;
+
+/* COMPILE WITH: gcc fem.cpp -std=c++11 -lstdc++
+mesh_reader.hpp needs those two flags for reading files */
+
+void A(Triangle triangles[], int nb_triangles);
 void  f();
-void local(Triangle triangle,boost::numeric::ublas::matrix<double> M);
+void local(Triangle triangle, matrix<double> M);
 
 int main(){
     return 0;
@@ -14,8 +22,8 @@ int main(){
 
 void f(){
   }
-void A(Triangle triangles[],int nb_triangles,boost::numeric::ublas::mapped_matrix<double> A){
-  boost::numeric::ublas::matrix<double> M (3,3);
+void A(Triangle triangles[],int nb_triangles, mapped_matrix<double> A){
+  matrix<double> M (3,3);
   for (int i=0;i<nb_triangles;i++){
     local(triangles[i],M);
     for(int j= 0;j<3;j++){
@@ -26,6 +34,6 @@ void A(Triangle triangles[],int nb_triangles,boost::numeric::ublas::mapped_matri
   }
 }
 
-void local(Triangle triangle,boost::numeric::ublas::matrix<double> M){
+void local(Triangle triangle, matrix<double> M){
 
 }
