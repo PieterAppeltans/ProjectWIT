@@ -25,7 +25,7 @@ namespace mesh {
         std::istringstream iss(line);
         iss >> a >> b >> c;
         int nb_nodes = a;
-        matrix<double> vertices (nb_nodes, 3);
+        matrix<double> vertices(nb_nodes, 3);
 
         while (std::getline(infile, line)) {
             std::istringstream iss(line);
@@ -56,7 +56,7 @@ namespace mesh {
         std::istringstream iss(line);
         iss >> a >> b >> c;
         int nb_triangles = a;
-        matrix<double> triangles (nb_triangles, 4);
+        matrix<double> triangles(nb_triangles, 4);
 
         while (std::getline(infile, line)) {
             std::istringstream iss(line);
