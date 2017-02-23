@@ -21,3 +21,6 @@ http://www.ewp.rpi.edu/hartford/~ernesto/S2006/CHT/Notes/ch03.pdf
 
 #diffusion
 https://etd.ohiolink.edu/rws_etd/document/get/ohiou1176840295/inline
+
+# pieters favoriete weblink aller tijden
+http://www.dummies.com/education/math/algebra/finding-the-area-of-a-triangle-using-its-coordinates/
