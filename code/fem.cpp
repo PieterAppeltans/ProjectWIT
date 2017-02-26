@@ -86,5 +86,5 @@ double Ru(double &u, double &v, double &t) {
 }
 
 double Rv(double &u, double &v, double &t) {
-  return 0.97*Ru(u, v, t)+Vmfv(t)/(1+(u/0.1149));
+  return 0.97*Ru(u, v, t)+ (t)/(1+(u/0.1149));Z
 }
