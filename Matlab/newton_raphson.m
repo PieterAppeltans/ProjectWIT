@@ -6,8 +6,8 @@ function [ u,v ] = newton_raphson( F,J,u0,v0,tol)
  v = v0;
  x = [u;v];
  N = size(u0,1);
- while(norm(res,2)>tol)
-     disp(norm(res,2));
+ while(norm(res,inf)>tol)
+     disp(norm(res,inf))
      x = x-(J(u,v)\F(u,v));
      u = x(1:N);
      v = x(N+1:end);

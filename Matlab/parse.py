@@ -1,13 +1,15 @@
 vi = open('pear.1.node','r')
-vo = open('vertices.mat','w')
+vo = open('vertices.dat','w')
 ti = open('pear.1.ele','r')
-to = open('triangles.mat','w')
+to = open('triangles.dat','w')
 pi = open('pear.1.poly','r')
-po = open('boundary.mat','w')
+po = open('boundary.dat','w')
 vertices = []
 for line in vi:
 	arr = line.split()
-	t = arr[1:3] 
+	t = arr[1:3]
+	for l in range(0,2):
+		t[l] = str(float(t[l])/10.)
 	vertices.append(t)
 	s = " ".join(t)
 	vo.write(s)
