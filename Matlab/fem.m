@@ -58,7 +58,7 @@ u_0 = [(A_u+(Vmu/Kmu)*B)+hu*C]\(hu*D*Cu_amb);
 v_0 = [(-A_v-hv*C)]\[-rq*(Vmu/Kmu)*B*u_0-Vmfv-hv*D*Cv_amb];
 %u_0 = 3*ones(nb_vertices,1);
 %v_0 = 3*ones(nb_vertices,1);
-[u,v]= newton_raphson( F,J,u_0,v_0,10^(-5));
+[u,v]= newton_raphson( F,J,u_0,v_0,10^(-6));
 
 xlin = linspace(0,5);
 ylin = linspace(0,10);
@@ -66,5 +66,9 @@ ylin = linspace(0,10);
 Z = griddata(vertices(:,1),vertices(:,2),u,X,Y,'linear');
 figure
 mesh(X,Y,Z)
+xlim([0 10])
+ylim([0 10])
+figure
+contour(X,Y,Z,40)
 xlim([0 10])
 ylim([0 10])
