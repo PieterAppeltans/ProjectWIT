@@ -39,18 +39,20 @@ D = zeros(nb_vertices,1);
 for i=1:nb_triangles
     area = Opp_triangle(vertices(triangles(i,:),:));
     A(triangles(i,:),triangles(i,:)) = A_local(area,vertices(triangles(i,:),:));
-    B(triangles(i,:),triangles(i,:)) = A_local(area,vertices(triangles(i,:),:));
+    B(triangles(i,:),triangles(i,:)) = B_local(area,vertices(triangles(i,:),:));
 end
+
 for i=1:nb_boundary
     length = Length_edge(vertices(boundary(i,:),:));
     C(boundary(i,:),boundary(i,:)) = C_local(length,vertices(boundary(i,:),:));
     D(boundary(i,:)) = D_local(length,vertices(boundary(i,:),:));
 end
-F = @(u,v) [Du*A*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u+D*Cu_amb);-Dv*A*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv )-hv*(C*u+D*Cv_amb)];
-J = @(u,v) [[Du*A+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[B* -Dv*A+B*-hv*C]];
+F = @(u,v) [Du*A*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u+D*Cu_amb);-Dv*A*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*(C*u+D*Cv_amb)];
+J = @(u,v) [[Du*A+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) -Dv*A+B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*C]];
 
 %u_0 = [(Du*A+(Vmu/Kmu)*B)+hu*C]\(D*Cu_amb);
 %v_0 = [(-Dv*A-hv*C)]\[-rq*B*u_0+hv*D*Cv_amb];
-u_0 = ones(nb_vertices,1);
-v_0 = ones(nb_vertices,1);
+u_0 = 0.12*ones(nb_vertices,1);
+v_0 = 0.12*ones(nb_vertices,1);
 [u,v]= newton_raphson( F,J,u_0,v_0,10^(-2));
+surface(vertices,u_0)

@@ -7,7 +7,7 @@ function [ M ] = B_local( area,vertices )
  M = area/(60)*[[6*r1+2*r2+2*r3 2*r1+2*r2+r3   2*r1+r2+2*r3];
                 [2*r1+2*r2+r3   6*r1+2*r2+2*r3 r1+2*r2+2*r3];
                 [2*r1+r2+2*r3   r1+2*r2+2*r3   2*r1+2*r2+6*r3]];
-if(isnan(any(any(M))))
+if(any(any(isnan(M))))
     disp('Nan during local B calculation')
 end
 end

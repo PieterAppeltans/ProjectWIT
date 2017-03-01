@@ -3,7 +3,7 @@ function [ M ] = A_local( area, vertices )
 %   Detailed explanation goes here
 G = [[(vertices(2,2)-vertices(3,2)),(vertices(3,1)-vertices(2,1))];[(vertices(3,2)-vertices(1,2)),(vertices(1,1)-vertices(3,1))];[(vertices(1,2)-vertices(2,2)),(vertices(2,1)-vertices(1,1))]];
 M = (vertices(1,1)+vertices(2,1)+vertices(3,1))/(12*area)*G*G';
-if(isnan(any(any(M))))
+if(any(any(isnan(M))))
     disp('Nan during local A calculation')
 end
 end

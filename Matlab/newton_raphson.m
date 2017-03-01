@@ -4,8 +4,8 @@ function [ u,v ] = newton_raphson( F,J,u0,v0,tol)
  res = F(u0,v0);
  u = u0;
  v = v0;
+ x = [u;v];
  N = size(u0,1);
- res
  while(norm(res,2)>tol)
      disp(norm(res,2));
      x = x-(J(u,v)\F(u,v));
