@@ -41,8 +41,8 @@ C = zeros(nb_vertices,nb_vertices);
 D = zeros(nb_vertices,1);
 for i=1:nb_triangles
     area = Opp_triangle(vertices(triangles(i,:),:));
-    A_u(triangles(i,:),triangles(i,:)) = A(triangles(i,:),triangles(i,:)) + A_local(area,vertices(triangles(i,:),:),Du_r,Du_z);
-    A_v(triangles(i,:),triangles(i,:)) = A(triangles(i,:),triangles(i,:)) + A_local(area,vertices(triangles(i,:),:),Du_r,Du_z);
+    A_u(triangles(i,:),triangles(i,:)) = A_u(triangles(i,:),triangles(i,:)) + A_local(area,vertices(triangles(i,:),:),Du_r,Du_z);
+    A_v(triangles(i,:),triangles(i,:)) = A_v(triangles(i,:),triangles(i,:)) + A_local(area,vertices(triangles(i,:),:),Dv_r,Dv_z);
     B(triangles(i,:),triangles(i,:)) = B(triangles(i,:),triangles(i,:)) + B_local(area,vertices(triangles(i,:),:));
 end
 
@@ -51,12 +51,20 @@ for i=1:nb_boundary
     C(boundary(i,:),boundary(i,:)) = C(boundary(i,:),boundary(i,:))+ C_local(length,vertices(boundary(i,:),:));
     D(boundary(i,:)) = D(boundary(i,:)) + D_local(length,vertices(boundary(i,:),:));
 end
-F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u+D*Cu_amb);-A_v*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*(C*u+D*Cv_amb)];
+F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);-A_v*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*(C*v-D*Cv_amb)];
 J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) -A_v+B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*C]];
 
-%u_0 = [(Du*A+(Vmu/Kmu)*B)+hu*C]\(D*Cu_amb);
-%v_0 = [(-Dv*A-hv*C)]\[-rq*B*u_0+hv*D*Cv_amb];
-u_0 = 0.12*ones(nb_vertices,1);
-v_0 = 0.12*ones(nb_vertices,1);
-[u,v]= newton_raphson( F,J,u_0,v_0,10^(-2));
-surface(vertices,u_0)
+u_0 = [(A_u+(Vmu/Kmu)*B)+hu*C]\(hu*D*Cu_amb);
+v_0 = [(-A_v-hv*C)]\[-rq*(Vmu/Kmu)*B*u_0-Vmfv-hv*D*Cv_amb];
+%u_0 = 3*ones(nb_vertices,1);
+%v_0 = 3*ones(nb_vertices,1);
+[u,v]= newton_raphson( F,J,u_0,v_0,10^(-5));
+
+xlin = linspace(0,5);
+ylin = linspace(0,10);
+[X,Y] = meshgrid(xlin,ylin);
+Z = griddata(vertices(:,1),vertices(:,2),u,X,Y,'linear');
+figure
+mesh(X,Y,Z)
+xlim([0 10])
+ylim([0 10])
