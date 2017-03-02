@@ -22,5 +22,9 @@ http://www.ewp.rpi.edu/hartford/~ernesto/S2006/CHT/Notes/ch03.pdf
 #diffusion
 https://etd.ohiolink.edu/rws_etd/document/get/ohiou1176840295/inline
 
-# pieters favoriete weblink aller tijden
+# Weblink met fout die dummies toch
 http://www.dummies.com/education/math/algebra/finding-the-area-of-a-triangle-using-its-coordinates/
+
+# Boost non linear solvers !!!
+http://www.boost.org/doc/libs/1_63_0/libs/math/doc/html/math_toolkit/roots/roots_noderiv.html
+http://www.boost.org/doc/libs/1_63_0/libs/math/doc/html/math_toolkit/roots/roots_deriv.html
