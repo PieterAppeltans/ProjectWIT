@@ -8,7 +8,7 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/symmetric.hpp>
 #include <boost/numeric/ublas/operation.hpp>
-
+#include <boost/numeric/ublas/operation_blocked.hpp>
 
 using namespace boost::numeric::ublas;
 
@@ -90,28 +90,28 @@ int main() {
   /* Read and store mesh information */
   matrix<double> vertices = mesh::read_vertices();
   matrix<double> triangles = mesh::read_triangles(vertices);
+  matrix<int> boundaries = mesh::read_boundaries(vertices);
 
   /* Calculate righthand side vector integrals */
-  matrix<double> init_C(vertices.size1(), vertices.size1());
+  matrix<double> init_B(vertices.size1(), vertices.size1());
   vector<double> R(vertices.size1());
   vector<double> S(vertices.size1());
-  symmetric_adaptor<matrix<double>, lower> C(init_C);
+  symmetric_adaptor<matrix<double>, lower> B(init_B);
   for (unsigned t = 0; t < triangles.size1(); ++t) {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
     double area = triangles(t, 3);
-    C(a, a) += area*(6*vertices(a, 0) + 2*vertices(b, 0) + 2*vertices(c, 0));
-    C(b, a) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + vertices(c, 0));
-    C(c, a) += area*(2*vertices(a, 0) + vertices(b, 0) + 2*vertices(c, 0));
-    C(b, b) += area*(2*vertices(a, 0) + 6*vertices(b, 0) + 2*vertices(c, 0));
-    C(b, c) += area*(vertices(a, 0) + 2*vertices(b, 0) + 2*vertices(c, 0));
-    C(c, c) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + 6*vertices(c, 0));
+    B(a, a) += area*(6*vertices(a, 0) + 2*vertices(b, 0) + 2*vertices(c, 0));
+    B(b, a) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + vertices(c, 0));
+    B(c, a) += area*(2*vertices(a, 0) + vertices(b, 0) + 2*vertices(c, 0));
+    B(b, b) += area*(2*vertices(a, 0) + 6*vertices(b, 0) + 2*vertices(c, 0));
+    B(b, c) += area*(vertices(a, 0) + 2*vertices(b, 0) + 2*vertices(c, 0));
+    B(c, c) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + 6*vertices(c, 0));
   }
-  C *= (1/60);
-  // multiplied by vector R nonlinear in u and v
+  B *= (1/60);
 
-  /* Calculate stiffness matrix A */
+  /* Calculate first part of stiffness matrix A */
   matrix<double> init_A(vertices.size1(), vertices.size1());
   matrix<double> G(3, 2);
   matrix<double> GGT(3, 3);
@@ -120,23 +120,41 @@ int main() {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
-    // double area = triangles(t, 3);
+    double area = triangles(t, 3);
     G(0, 0) = (vertices(b, 1) - vertices(c, 1))*sqrt(DU_R);
     G(1, 0) = (vertices(c, 1) - vertices(a, 1))*sqrt(DU_R);
     G(2, 0) = (vertices(a, 1) - vertices(b, 1))*sqrt(DU_R);
     G(0, 1) = (vertices(c, 0) - vertices(b, 0))*sqrt(DU_Z);
     G(1, 1) = (vertices(a, 0) - vertices(c, 0))*sqrt(DU_Z);
     G(2, 1) = (vertices(b, 0) - vertices(a, 0))*sqrt(DU_Z);
-    // GGT = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*block_prod<matrix_type, 64> (G, trans(G));
-    A(a, a) += G(0, 0);
-    A(b, a) += G(1, 0);
-    A(c, a) += G(2, 0);
-    A(b, b) += G(1, 1);
-    A(b, c) += G(1, 2);
-    A(c, c) += G(2, 2);
+    GGT = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*block_prod<matrix<double>, 64> (G, trans(G));
+    A(a, a) += GGT(0, 0);
+    A(b, a) += GGT(1, 0);
+    A(c, a) += GGT(2, 0);
+    A(b, b) += GGT(1, 1);
+    A(b, c) += GGT(1, 2);
+    A(c, c) += GGT(2, 2);
   }
 
-  /* Calculate Jacobian */
+  /* Boundary condition integrals: second part of A and a constant vector term */
+  vector<double> V(2);
+  matrix<double> init_C(vertices.size1(), vertices.size1());
+  symmetric_adaptor<matrix<double>, lower> C(init_C);
+  matrix<double> init_D(vertices.size1(), vertices.size1());
+  symmetric_adaptor<matrix<double>, lower> D(init_D);
+  for (unsigned b = 0; b < boundaries.size1(); ++b) {
+    double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
+      pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
+    C(boundaries(b, 0), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/4 + vertices(boundaries(b, 1), 0)/12);
+    C(boundaries(b, 0), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
+    C(boundaries(b, 1), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/4);
+    V(0) = vertices(boundaries(b, 0), 0)/3 + vertices(boundaries(b, 1), 0)/6;
+    V(1) = vertices(boundaries(b, 0), 0)/6 + vertices(boundaries(b, 1), 0)/3;
+    V *= len*Cuamb(T_CEL);
+  }
+
+  /* KINSOL: solving nonlinear system numerically */
+
 
   return 0;
 }
