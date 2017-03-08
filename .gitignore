@@ -29,4 +29,9 @@
 *.app
 
 # Matlab temporary files
-.m~
+*.m~
+
+# Temporary triangle files
+*.ele~
+*.poly~
+*.node~
