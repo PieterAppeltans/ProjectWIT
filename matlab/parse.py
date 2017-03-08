@@ -1,8 +1,9 @@
-vi = open('circle.1.node','r')
+filename = "circle.1"
+vi = open(filename+'.node','r')
 vo = open('vertices.dat','w')
-ti = open('circle.1.ele','r')
+ti = open(filename+'.ele','r')
 to = open('triangles.dat','w')
-pi = open('circle.1.poly','r')
+pi = open(filename+'.poly','r')
 po = open('boundary.dat','w')
 vertices = []
 for line in vi:

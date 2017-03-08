@@ -54,11 +54,11 @@ end
 F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);-A_v*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*(C*v-D*Cv_amb)];
 J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) -A_v+B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*C]];
 
-u_0 = ((A_u+(Vmu/Kmu)*B)+hu*C)\(hu*D*Cu_amb);
-v_0 = [(-A_v-hv*C)]\[-rq*(Vmu/Kmu)*B*u_0-Vmfv-hv*D*Cv_amb];
-%u_0 = Cu_amb*ones(nb_vertices,1);
-%v_0 = Cv_amb*ones(nb_vertices,1);
-[u,v] = newton_raphson( F,J,u_0,v_0,2*10^(-5));
+%x_0 = [(A_u+(Vmu/Kmu)*B)+hu*C zeros(nb_vertices,nb_vertices);B*rq*(Vmu/Kmu) -A_v-hv*C]\[hu*D*Cu_amb;-hv*D*Cv_amb];
+
+u_0 = Cu_amb*ones(nb_vertices,1);
+v_0 = Cv_amb*ones(nb_vertices,1);
+[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-6));
 
 xlin = linspace(0,5,300);
 ylin = linspace(0,10,300);
@@ -69,17 +69,17 @@ figure
 subplot(1,2,1)
 contourf(X,Y,U,10)
 xlim([0 5])
-ylim([0 5])
+ylim([0 10])
 subplot(1,2,2)
 contourf(X,Y,V,10)
 xlim([0 5])
-ylim([0 5])
+ylim([0 10])
 figure
 subplot(1,2,1)
 mesh(X,Y,U)
 xlim([0 5])
-ylim([0 5])
+ylim([0 10])
 subplot(1,2,2)
 mesh(X,Y,V)
 xlim([0 5])
-ylim([0 5])
+ylim([0 10])
