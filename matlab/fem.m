@@ -34,11 +34,11 @@ E_a_vmfv_ref = 56700;
 Vmfv = Vmfv_ref*exp((E_a_vmfv_ref/Rg)*((1/293.15)-(1/T)));
 Kmfu = 0.1149;
 
-A_u = zeros(nb_vertices,nb_vertices);
-A_v = zeros(nb_vertices,nb_vertices);
-B = zeros(nb_vertices,nb_vertices);
-C = zeros(nb_vertices,nb_vertices);
-D = zeros(nb_vertices,1);
+A_u = sparse(nb_vertices,nb_vertices);
+A_v = sparse(nb_vertices,nb_vertices);
+B = sparse(nb_vertices,nb_vertices);
+C = sparse(nb_vertices,nb_vertices);
+D = sparse(nb_vertices,1);
 for i=1:nb_triangles
     area = Opp_triangle(vertices(triangles(i,:),:));
     A_u(triangles(i,:),triangles(i,:)) = A_u(triangles(i,:),triangles(i,:)) + A_local(area,vertices(triangles(i,:),:),Du_r,Du_z);
