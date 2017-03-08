@@ -33,7 +33,8 @@ const double Cvamb = (101300*ETA_U)/(8.314*T_CEL);
 const double Cuamb = (101300*ETA_V)/(8.314*T_CEL);
 const double Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T_CEL));
 const double Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T_CEL));
-
+const double hu = 7*pow(10,-7);
+const double hv = 7.5*pow(10,-7);
 
 double Ru_simple(double u) {
   /* To calculate starting value of u for solving
@@ -48,12 +49,11 @@ double Rv_simple(double u) {
 }
 
 class Ru {
-
   public:
     Ru() {
     }
-    template vector<double,typename T> operator()(double u, double v) const {
-      return element_div(Vmu*u,element_prod(0.4103+u,1+(v/27.2438)));
+    vector<double> operator()(vector<double> u, vector<double> v) const {
+      return element_div(Vmu*u,element_prod(scalar_vector<double>(u.size(),0.4103)+u,scalar_vector<double>(u.size(),1)+(v/27.2438)));
     }
 
 };
@@ -63,7 +63,7 @@ class Rv {
     Rv() { }
     vector<double> operator()(vector<double> u, vector<double> v) const {
       Ru Ru_funct;
-      return 0.97*Ru_funct(u, v)+ element_div(Vmfv*scalar_vector(u.length(),1),1+(u/0.1149));
+      return 0.97*Ru_funct(u,v)+ element_div(Vmfv*scalar_vector<double>(u.size(),1),scalar_vector<double>(u.size(),1)+(u/0.1149));
     }
 
 };
@@ -85,9 +85,11 @@ public:
     vector<double> temp(N_);
     vector<double> u = project(x,range(0,N_));
     vector<double> v = project(x,range(N_,2*N_));
-    temp = prod(Au_, u)+ prod(B_,Ru(u,v))+hu*(prod(C_,u)-D_*Cuamb);
+    Ru Ru_funct;
+    Rv Rv_funct;
+    temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
     project(result,range(0,N_)) = temp;
-    temp = -prod(Av_,v)+ prod(B_,Rv(u,v))-hv*(prod(C_,v)-D_*Cvamb);
+    temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
     project(result,range(N_,2*N_)) = temp;
     return result;
   };
