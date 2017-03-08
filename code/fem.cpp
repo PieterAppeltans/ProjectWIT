@@ -10,9 +10,10 @@
 #include <boost/numeric/ublas/symmetric.hpp>
 #include <boost/numeric/ublas/operation.hpp>
 #include <boost/numeric/ublas/operation_blocked.hpp>
+#include <boost/math/tools/roots.hpp>
 
 using namespace boost::numeric::ublas;
-
+using namespace boost::math::tools;
 /* COMPILE WItH: g++ -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
 mesh_reader.hpp needs those two flags for reading files */
 
@@ -94,7 +95,10 @@ public:
     return result;
   };
 };
-
+class TOL{
+  TOL(){}
+  bool operator()(vector<double> leftBoundary,vector<double> rightBoundary){}
+}
 int main() {
   /* Read and store mesh information */
   matrix<double> vertices = mesh::read_vertices();
@@ -174,7 +178,9 @@ int main() {
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
+  F F_funct(A_U,A_V,B,C,D,vertices.size1());
 
+  bisect(F_funct,scalar_vector<double>(2*vertices.size1(),0)scalar_vector<double>(2*vertices.size1(),5*pow(10,6)))
 
 
   return 0;
