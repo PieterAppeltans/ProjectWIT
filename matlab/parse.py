@@ -10,7 +10,7 @@ for line in vi:
 	arr = line.split()
 	t = arr[1:3]
 	for l in range(0,2):
-		t[l] = str(float(t[l]))
+		t[l] = str(float(t[l])/100.)
 	vertices.append(t)
 	s = " ".join(t)
 	vo.write(s)
