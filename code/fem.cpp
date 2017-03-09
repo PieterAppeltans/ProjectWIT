@@ -68,37 +68,63 @@ class Rv {
     }
 
 };
-class F{
-private:
-  matrix<double> Au_;
-  matrix<double> Av_;
-  matrix<double> B_;
-  matrix<double> C_;
-  vector<double> D_;
-  int N_;
-public:
-  F(matrix<double> Au,matrix<double> Av, matrix<double> B,matrix<double>C,vector<double>D,int N)
-  {
-    Au_ =Au;Av_ = Av; B_ = B;C_ = C;D_ =D;N_= N;
-  };
-  vector<double> operator()(vector<double> x){
-    vector<double> result(2*N_);
-    vector<double> temp(N_);
-    vector<double> u = project(x,range(0,N_));
-    vector<double> v = project(x,range(N_,2*N_));
-    Ru Ru_funct;
-    Rv Rv_funct;
-    temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
-    project(result,range(0,N_)) = temp;
-    temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
-    project(result,range(N_,2*N_)) = temp;
-    return result;
-  };
+
+class F {
+  private:
+    matrix<double> Au_;
+    matrix<double> Av_;
+    matrix<double> B_;
+    matrix<double> C_;
+    vector<double> D_;
+    int N_;
+
+  public:
+    F(matrix<double> Au,matrix<double> Av, matrix<double> B,matrix<double>C,vector<double>D,int N)
+    {
+      Au_ =Au;Av_ = Av; B_ = B;C_ = C;D_ =D;N_= N;
+    };
+    vector<double> operator()(vector<double> x){
+      vector<double> result(2*N_);
+      vector<double> temp(N_);
+      vector<double> u = project(x,range(0,N_));
+      vector<double> v = project(x,range(N_,2*N_));
+      Ru Ru_funct;
+      Rv Rv_funct;
+      temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
+      project(result,range(0,N_)) = temp;
+      temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
+      project(result,range(N_,2*N_)) = temp;
+      return result;
+    };
 };
-class TOL{
-  TOL(){}
-  bool operator()(vector<double> leftBoundary,vector<double> rightBoundary){}
-}
+
+class J {
+  private:
+    matrix<double> Au_;
+    matrix<double> Av_;
+    matrix<double> B_;
+    matrix<double> C_;
+    vector<double> D_;
+    int N_;
+
+  public:
+    J(matrix<double> Au,matrix<double> Av, matrix<double> B,matrix<double>C,vector<double>D,int N)
+    {
+      Au_ =Au; Av_ = Av; B_ = B; C_ = C; D_ =D; N_= N;
+    };
+    matrix<double> operator()(vector<double> u, vector<double> v) {
+      vector<double> result(2*N_);
+      vector<double> temp(N_);
+      Ru Ru_funct;
+      Rv Rv_funct;
+      temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
+      project(result,range(0,N_)) = temp;
+      temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
+      project(result,range(N_,2*N_)) = temp;
+      return result;
+    };
+};
+
 int main() {
   /* Read and store mesh information */
   matrix<double> vertices = mesh::read_vertices();
