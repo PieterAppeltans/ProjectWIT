@@ -34,6 +34,12 @@ E_a_vmfv_ref = 56700;
 Vmfv = Vmfv_ref*exp((E_a_vmfv_ref/Rg)*((1/293.15)-(1/T)));
 Kmfu = 0.1149;
 
+R = 0.05;
+Du = Du_r;
+Dv = Dv_r;
+sigma1 = sqrt(Vmu*rq/(Dv*Kmu));
+exact_u = @(r) ((Cu_amb*R^2*hu*sinh(r*sqrt(Vmu/(Du*Kmu))))./(R*hu*r*sinh(R*sqrt(Vmu/(Du*Kmu)))-Du*r*sinh(R*sqrt(Vmu/(Du*Kmu)))+Du*R*r*cosh(R*sqrt(Vmu/(Du*Kmu)))*sqrt(Vmu/(Du*Kmu))));
+exact_v = @(r) (Cv_amb*R^2*hv*sin(r*sigma1))./(R*hv*r*sin(R*sigma1)-Dv*r*sin(R*sigma1)+Dv*R*r*cos(R*sigma1)*sigma1);
 A_u = zeros(nb_vertices,nb_vertices);
 A_v = zeros(nb_vertices,nb_vertices);
 B = zeros(nb_vertices,nb_vertices);
@@ -51,41 +57,22 @@ for i=1:nb_boundary
     C(boundary(i,:),boundary(i,:)) = C(boundary(i,:),boundary(i,:))+ C_local(length,vertices(boundary(i,:),:));
     D(boundary(i,:)) = D(boundary(i,:)) + D_local(length,vertices(boundary(i,:),:));
 end
-F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);-A_v*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*(C*v-D*Cv_amb)];
-J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) -A_v+B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*C]];
 
 u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
-[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-10));
 
-xmin = 0;
-xmax = 0.05;
-ymin = -0.05;
-ymax = 0.05;
-xlin = linspace(xmin,xmax,300);
-ylin = linspace(ymin,ymax,300);
-[X,Y] = meshgrid(xlin,ylin);
-U = griddata(vertices(:,1),vertices(:,2),u,X,Y,'linear');
-V = griddata(vertices(:,1),vertices(:,2),v,X,Y,'linear');
-
-
+r = linspace(0,R);
+xlin = linspace(0,R,300);
+ylin = linspace(-R,R,300);
+[X,Y] = meshgrid(xlin,0);
+U = griddata(vertices(:,1),vertices(:,2),u_0,X,Y,'linear');
+V = griddata(vertices(:,1),vertices(:,2),v_0,X,Y,'linear');
 
 figure
-subplot(1,2,1)
-contourf(X,Y,U,10)
-xlim([xmin xmax])
-ylim([ymin ymax])
-subplot(1,2,2)
-contourf(X,Y,V,10)
-xlim([xmin xmax])
-ylim([ymin ymax])
+hold on
+plot(r,exact_u(r),'ro')
+plot(xlin,U,'bx')
+
 figure
-subplot(1,2,1)
-mesh(X,Y,U)
-xlim([xmin xmax])
-ylim([ymin ymax])
-subplot(1,2,2)
-mesh(X,Y,V)
-xlim([xmin xmax])
-ylim([ymin ymax])
+plot(xlin,V,'bx')
