@@ -51,41 +51,11 @@ for i=1:nb_boundary
     C(boundary(i,:),boundary(i,:)) = C(boundary(i,:),boundary(i,:))+ C_local(length,vertices(boundary(i,:),:));
     D(boundary(i,:)) = D(boundary(i,:)) + D_local(length,vertices(boundary(i,:),:));
 end
-F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);-A_v*v+B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*(C*v-D*Cv_amb)];
-J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) -A_v+B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)-hv*C]];
+F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);A_v*v-B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)+hv*(C*v-D*Cv_amb)];
+J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[-B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) A_v-B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)+hv*C]];
 
 u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
-[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-10));
+[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-15));
 
-xmin = 0;
-xmax = 0.05;
-ymin = -0.05;
-ymax = 0.05;
-xlin = linspace(xmin,xmax,300);
-ylin = linspace(ymin,ymax,300);
-[X,Y] = meshgrid(xlin,ylin);
-U = griddata(vertices(:,1),vertices(:,2),u,X,Y,'linear');
-V = griddata(vertices(:,1),vertices(:,2),v,X,Y,'linear');
-
-
-
-figure
-subplot(1,2,1)
-contourf(X,Y,U,10)
-xlim([xmin xmax])
-ylim([ymin ymax])
-subplot(1,2,2)
-contourf(X,Y,V,10)
-xlim([xmin xmax])
-ylim([ymin ymax])
-figure
-subplot(1,2,1)
-mesh(X,Y,U)
-xlim([xmin xmax])
-ylim([ymin ymax])
-subplot(1,2,2)
-mesh(X,Y,V)
-xlim([xmin xmax])
-ylim([ymin ymax])

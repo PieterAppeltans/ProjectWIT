@@ -36,6 +36,8 @@ const double Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T_CEL));
 const double Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T_CEL));
 const double hu = 7*pow(10,-7);
 const double hv = 7.5*pow(10,-7);
+const double Kmu = 1.;
+const double Kmv = 1.;
 
 double Ru_simple(double u) {
   /* To calculate starting value of u for solving
@@ -98,6 +100,23 @@ class F {
     };
 };
 
+matrix<double> dRudu(vector<double> u,vector<double> v){
+  vector<double> t = element_div(scalar_vector<double>(u.size(),Vmu*Kmu),element_prod(element_prod(scalar_vector<double>(u.size(),1)+u,scalar_vector<double>(u.size(),1)+u),scalar_vector<double>(u.size(),1)+v/Kmv));
+  return diagonal_matrix<double>(u.size(), t);
+};
+matrix<double> dRudv(vector<double> u,vector<double> v){
+  vector<double> t = element_div(-Vmu*u,element_prod(scalar_vector<double>(u.size(),Kmu)+u,Kmv*element_prod(scalar_vector<double>(u.size(),1.),v/Kmv,scalar_vector<double>(u.size(),1.),v/Kmv)));
+  return diagonal_matrix<double>(u.size(),t);
+};
+matrix<double> dRvdu(vector<double> u,vector<double> v){
+  vector<double> dRudu = element_div(scalar_vector<double>(u.size(),Vmu*Kmu),element_prod(element_prod(scalar_vector<double>(u.size(),1)+u,scalar_vector<double>(u.size(),1)+u),scalar_vector<double>(u.size(),1)+v/Kmv));
+  vector<double> t = rq*dRudu+Vmfv*element_div(scalar_vector<double>(u.size(),-1.),(Kmfu,element_prod(scalar_vector(u.size(),1)+u/Kmfu,scalar_vector(u.size(),1)+u/Kmfu)));
+  return diagonal_matrix<double>(u.size(),t);
+}
+matrix<double> dRvdv(vector<double> u,vector<double> v){
+  vector<double> t = rq*element_div(-Vmu*u,element_prod(scalar_vector<double>(u.size(),Kmu)+u,Kmv*element_prod(scalar_vector<double>(u.size(),1.),v/Kmv,scalar_vector<double>(u.size(),1.),v/Kmv)));
+  return diagonal_matrix<double>(u.size(),t);
+}
 class J {
   private:
     matrix<double> Au_;
@@ -113,14 +132,18 @@ class J {
       Au_ =Au; Av_ = Av; B_ = B; C_ = C; D_ =D; N_= N;
     };
     matrix<double> operator()(vector<double> u, vector<double> v) {
-      vector<double> result(2*N_);
-      vector<double> temp(N_);
-      Ru Ru_funct;
-      Rv Rv_funct;
-      temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
-      project(result,range(0,N_)) = temp;
-      temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
-      project(result,range(N_,2*N_)) = temp;
+      matrix<double> result(2*N_,2*N_);
+      matrix<double> temp(N_,N_);
+
+
+      temp = Au_ + B_*dRudu(u,v)+hu*C_;
+      project(result,range(0,N_),range(0,N_)) = temp;
+      temp = B_*dRudv(u,v);
+      project(result,range(0,N_),range(N_,2*N_)) = temp;
+      temp = -B_*dRvdu(u,v);
+      project(result,range(N_,2*N_),range(0,N_)) = temp;
+      temp = A_v-B*dRvdv(u,v)+hv*C;
+      project(result,range(N_,2*N_),range(N_,2*N_)) = temp;
       return result;
     };
 };
@@ -206,7 +229,6 @@ int main() {
   }
   F F_funct(A_U,A_V,B,C,D,vertices.size1());
 
-  bisect(F_funct,scalar_vector<double>(2*vertices.size1(),0)scalar_vector<double>(2*vertices.size1(),5*pow(10,6)))
 
 
   return 0;
