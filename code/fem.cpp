@@ -36,6 +36,8 @@ const double Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T_CEL));
 const double Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T_CEL));
 const double hu = 7*pow(10,-7);
 const double hv = 7.5*pow(10,-7);
+const double Kmu = 1.;
+const double Kmv = 1.;
 
 vector<double> Ru_simple(vector<double> u) {
   /* To calculate starting value of u for solving nonlinear system of equations */
@@ -119,7 +121,6 @@ class FJ {
       project(JAC,range(n+1,2*n),range(n+1,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
       return std::make_tuple(func, JAC);
     }
-
 };
 
 int main() {
