@@ -35,3 +35,12 @@
 *.ele~
 *.poly~
 *.node~
+
+# Python
+*.py~
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Log files
+*.log
