@@ -98,32 +98,32 @@ class F {
     };
 };
 
-class J {
-  private:
-    matrix<double> Au_;
-    matrix<double> Av_;
-    matrix<double> B_;
-    matrix<double> C_;
-    vector<double> D_;
-    int N_;
-
-  public:
-    J(matrix<double> Au,matrix<double> Av, matrix<double> B,matrix<double>C,vector<double>D,int N)
-    {
-      Au_ =Au; Av_ = Av; B_ = B; C_ = C; D_ =D; N_= N;
-    };
-    matrix<double> operator()(vector<double> u, vector<double> v) {
-      vector<double> result(2*N_);
-      vector<double> temp(N_);
-      Ru Ru_funct;
-      Rv Rv_funct;
-      temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
-      project(result,range(0,N_)) = temp;
-      temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
-      project(result,range(N_,2*N_)) = temp;
-      return result;
-    };
-};
+// class J {
+//   private:
+//     matrix<double> Au_;
+//     matrix<double> Av_;
+//     matrix<double> B_;
+//     matrix<double> C_;
+//     vector<double> D_;
+//     int N_;
+//
+//   public:
+//     J(matrix<double> Au,matrix<double> Av, matrix<double> B,matrix<double>C,vector<double>D,int N)
+//     {
+//       Au_ =Au; Av_ = Av; B_ = B; C_ = C; D_ =D; N_= N;
+//     };
+//     matrix<double> operator()(vector<double> u, vector<double> v) {
+//       vector<double> result(2*N_);
+//       vector<double> temp(N_);
+//       Ru Ru_funct;
+//       Rv Rv_funct;
+//       temp = prod(Au_, u)+ prod(B_,Ru_funct(u,v))+hu*(prod(C_,u)-D_*Cuamb);
+//       project(result,range(0,N_)) = temp;
+//       temp = -prod(Av_,v)+ prod(B_,Rv_funct(u,v))-hv*(prod(C_,v)-D_*Cvamb);
+//       project(result,range(N_,2*N_)) = temp;
+//       return result;
+//     };
+// };
 
 int main() {
   /* Read and store mesh information */
@@ -182,7 +182,6 @@ int main() {
     A_U(b, b) += GGT_U(1, 1);
     A_U(b, c) += GGT_U(1, 2);
     A_U(c, c) += GGT_U(2, 2);
-
     A_V(a, a) += GGT_V(0, 0);
     A_V(b, a) += GGT_V(1, 0);
     A_V(c, a) += GGT_V(2, 0);
@@ -206,8 +205,41 @@ int main() {
   }
   F F_funct(A_U,A_V,B,C,D,vertices.size1());
 
-  bisect(F_funct,scalar_vector<double>(2*vertices.size1(),0)scalar_vector<double>(2*vertices.size1(),5*pow(10,6)))
+  // bisect(F_funct,scalar_vector<double>(2*vertices.size1(),0)scalar_vector<double>(2*vertices.size1(),5*pow(10,6)))
 
 
   return 0;
+}
+
+matrix<double> diagonalize(vector<double> v) {
+  matrix<double> result(v.size(), v.size());
+  for (unsigned l = 0; l < v.size(); ++l) {
+    result(l, l) = v(l);
+  }
+  return result;
+}
+
+matrix<double> dRudu(vector<double> u, vector<double> v) {
+  vector<double> one(u.size());
+  std::fill(one.begin(), one.end(), 1.0);
+  vector<double> res_vec = element_div(Vmu*0.4103*one, element_prod(one+v/27.2438, element_prod(one*0.4103+u, one*0.4103+u)));
+  return diagonalize(res_vec);
+}
+
+matrix<double> dRudv(vector<double> u, vector<double> v) {
+  vector<double> one(u.size());
+  std::fill(one.begin(), one.end(), 1.0);
+  vector<double> res_vec = element_div(-1*27.2438*Vmu*u, element_prod(0.1149*one+u, element_prod(27.2438*one+v, 27.2438*one+v)));
+  return diagonalize(res_vec);
+}
+
+matrix<double> dRvdu(vector<double> u, vector<double> v) {
+  vector<double> one(u.size());
+  std::fill(one.begin(), one.end(), 1.0);
+  vector<double> res_vec = element_div(Vmu*0.4103*one, element_prod(one+v/27.2438, element_prod(one*0.4103+u, one*0.4103+u)));
+  return 0.97*dRudu(u, v) - diagonalize(element_div(0.1149*Vmfv*one, element_prod(0.1149*one+u, 0.1149*one+u)));
+}
+
+matrix<double> dRvdv(vector<double> u, vector<double> v) {
+  return 0.97*dRudv(u, v);
 }
