@@ -28,3 +28,6 @@ http://www.dummies.com/education/math/algebra/finding-the-area-of-a-triangle-usi
 # Boost non linear solvers !!!
 http://www.boost.org/doc/libs/1_63_0/libs/math/doc/html/math_toolkit/roots/roots_noderiv.html
 http://www.boost.org/doc/libs/1_63_0/libs/math/doc/html/math_toolkit/roots/roots_deriv.html
+
+# Boost inverse
+http://www.crystalclearsoftware.com/cgi-bin/boost_wiki/wiki.pl?LU_Matrix_Inversion

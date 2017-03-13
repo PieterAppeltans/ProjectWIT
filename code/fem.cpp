@@ -108,6 +108,7 @@ class FJ {
     }
 
     std::tuple<vector<double>, matrix<double>> operator()(vector<double> x) {
+      /* x = [uT vT]T */
       int n = Au_.size1();
       vector<double> u = project(x,range(0,n));
       vector<double> v = project(x,range(n,2*n));
@@ -122,6 +123,69 @@ class FJ {
       return std::make_tuple(func, JAC);
     }
 };
+
+class F {
+  /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
+
+  private:
+    matrix<double> Au_;
+    matrix<double> Av_;
+    matrix<double> B_;
+    matrix<double> C_;
+    vector<double> D_;
+
+  public:
+    F(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double>C, vector<double>D) {
+      Au_ = Au; Av_ = Av; B_ = B; C_ = C; D_ = D;
+    }
+
+    vector<double> operator()(vector<double> x) {
+      /* x = [uT vT]T */
+      int n = Au_.size1();
+      vector<double> u = project(x,range(0,n));
+      vector<double> v = project(x,range(n,2*n));
+      vector<double> func(2*n);
+      project(func,range(0,n)) = prod(Au_,u) + prod(B_,Ru(u,v)) + hu*(prod(C_,u) - D_*uamb);
+      project(func,range(n,2*n)) = -prod(Av_,v) + prod(B_,Rv(u,v)) - hv*(prod(C_,v) - D_*vamb);
+      return func;
+    }
+};
+
+class J {
+  /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
+
+  private:
+    matrix<double> Au_;
+    matrix<double> Av_;
+    matrix<double> B_;
+    matrix<double> C_;
+    vector<double> D_;
+
+  public:
+    J(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double>C, vector<double>D) {
+      Au_ = Au; Av_ = Av; B_ = B; C_ = C; D_ = D;
+    }
+
+    matrix<double> operator()(vector<double> x) {
+      /* x = [uT vT]T */
+      int n = Au_.size1();
+      vector<double> u = project(x,range(0,n));
+      vector<double> v = project(x,range(n,2*n));
+      matrix<double> JAC(2*n, 2*n);
+      project(JAC,range(0,n),range(0, n)) = Au_ + prod(B_,dRudu(u,v)) + hu*C_;
+      project(JAC,range(n+1,2*n),range(0,n)) = prod(B_,dRudv(u,v));
+      project(JAC,range(n+1,2*n),range(0,n)) = prod(B_,dRvdu(u,v));
+      project(JAC,range(n+1,2*n),range(n+1,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
+      return JAC;
+    }
+};
+
+vector<double> newton_raphson(F func, J JAC, vector<double> start, double tol) {
+  /* Newton-Raphson iteration for function f with jacobian JAC (both functors),
+  stops when tolerance reached */
+  vector<double> result;
+  return result;
+}
 
 int main() {
   /* Read and store mesh information */
