@@ -1,4 +1,5 @@
 #include "mesh_reader.hpp"
+#include "newton_raphson.hpp"
 #include <tuple>
 #include <iostream>
 #include <math.h>
@@ -10,10 +11,10 @@
 #include <boost/numeric/ublas/symmetric.hpp>
 #include <boost/numeric/ublas/operation.hpp>
 #include <boost/numeric/ublas/operation_blocked.hpp>
-#include <boost/math/tools/roots.hpp>
+
 
 using namespace boost::numeric::ublas;
-using namespace boost::math::tools;
+
 
 /* COMPILE WItH: g++ -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
 mesh_reader.hpp needs those two flags for reading files */
@@ -46,16 +47,14 @@ vector<double> Ru_simple(vector<double> u) {
 
 vector<double> Rv_simple(vector<double> u) {
   /* To calculate starting value of v for solving nonlinear system of equations */
-  vector<double> one(u.size());
-  std::fill(one.begin(), one.end(), 1.0);
-  return rq*Ru_simple(u) + Vmfv*one;
+  return rq*Ru_simple(u);
 }
 
-vector<double> Ru(vector<double> u, vector<double> v) {
+vector<double> Ru(vector<double> const & u, vector<double> const & v) {
   return element_div(Vmu*u,element_prod(scalar_vector<double>(u.size(),0.4103)+u,scalar_vector<double>(u.size(),1)+(v/27.2438)));
 }
 
-vector<double> Rv(vector<double> u, vector<double> v) {
+vector<double> Rv(vector<double> const & u, vector<double> const& v) {
   return 0.97*Ru(u,v)+ element_div(Vmfv*scalar_vector<double>(u.size(),1),scalar_vector<double>(u.size(),1)+(u/0.1149));
 }
 
@@ -68,22 +67,19 @@ matrix<double> diagonalize(vector<double> v) {
 }
 
 matrix<double> dRudu(vector<double> u, vector<double> v) {
-  vector<double> one(u.size());
-  std::fill(one.begin(), one.end(), 1.0);
+  scalar_vector<double> one(u.size(),1.);
   vector<double> res_vec = element_div(Vmu*0.4103*one, element_prod(one+v/27.2438, element_prod(one*0.4103+u, one*0.4103+u)));
   return diagonalize(res_vec);
 }
 
 matrix<double> dRudv(vector<double> u, vector<double> v) {
-  vector<double> one(u.size());
-  std::fill(one.begin(), one.end(), 1.0);
+  scalar_vector<double> one(u.size(),1.);
   vector<double> res_vec = element_div(-1*27.2438*Vmu*u, element_prod(0.1149*one+u, element_prod(27.2438*one+v, 27.2438*one+v)));
   return diagonalize(res_vec);
 }
 
 matrix<double> dRvdu(vector<double> u, vector<double> v) {
-  vector<double> one(u.size());
-  std::fill(one.begin(), one.end(), 1.0);
+  scalar_vector<double> one(u.size(),1);
   vector<double> res_vec = element_div(Vmu*0.4103*one, element_prod(one+v/27.2438, element_prod(one*0.4103+u, one*0.4103+u)));
   return rq*dRudu(u, v) - diagonalize(element_div(0.1149*Vmfv*one, element_prod(0.1149*one+u, 0.1149*one+u)));
 }
@@ -180,12 +176,7 @@ class J {
     }
 };
 
-vector<double> newton_raphson(F func, J JAC, vector<double> start, double tol) {
-  /* Newton-Raphson iteration for function f with jacobian JAC (both functors),
-  stops when tolerance reached */
-  vector<double> result;
-  return result;
-}
+
 
 int main() {
   /* Read and store mesh information */
@@ -269,16 +260,15 @@ int main() {
   }
 
   /* Root finding for nonlinear system of equations */
-  FJ FJ_funct(A_U, A_V, B, C, D);
-  vector<double> min(vertices.size1());
-  vector<double> max(vertices.size1());
-  std::fill(max.begin(), max.end(), 10.0);
-  vector<double> one(vertices.size1());
-  std::fill(one.begin(), one.end(), 1.0);
+  F F_funct(A_U, A_V, B, C, D);
+  J J_funct(A_U, A_V, B, C, D);
+
+  scalar_vector<double> one(vertices.size1(),1);
   vector<double> guess(vertices.size1()*2);
   project(guess,range(0,vertices.size1())) = Ru_simple(uamb*one);
+  // Fout zit hier !!!!!!!!
   project(guess,range(vertices.size1()+1,2*vertices.size1())) = Rv_simple(uamb*one);
-  vector<double> newton_raphson_iterate(FJ_funct, guess, min, max, 10);
-
+  //newton_raphson(F_funct,J_funct,guess,pow(10,-7));
+  std::cout << guess << std::endl;
   return 0;
 }
