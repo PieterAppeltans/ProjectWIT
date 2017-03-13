@@ -1,4 +1,4 @@
-filename = "circle.1"
+filename = "pear.1"
 vi = open(filename+'.node','r')
 vo = open('vertices.dat','w')
 ti = open(filename+'.ele','r')
@@ -10,7 +10,7 @@ for line in vi:
 	arr = line.split()
 	t = arr[1:3]
 	for l in range(0,2):
-		t[l] = str(float(t[l])/100.)
+		t[l] = str(float(t[l])/1000.)
 	vertices.append(t)
 	s = " ".join(t)
 	vo.write(s)
