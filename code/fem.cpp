@@ -40,7 +40,7 @@ const double hv = 7.5*pow(10,-7);
 const double Kmu = 1.;
 const double Kmv = 1.;
 
-vector<double> Ru_simple(vector<double>u) {
+vector<double> Ru_simple(vector<double> u) {
   /* To calculate starting value of u for solving nonlinear system of equations */
   return (Vmu/0.4103)*u;
 }
@@ -131,8 +131,10 @@ class F {
     vector<double> D_;
 
   public:
-    F(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double>C, vector<double>D) {
-      Au_ = Au; Av_ = Av; B_ = B; C_ = C; D_ = D;
+    F(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double> C, vector<double> D)
+    :Au_(Au), Av_(Av),B_(B), C_(C),D_(D)
+    {
+
     }
 
     vector<double> operator()(vector<double> x) {
@@ -158,8 +160,10 @@ class J {
     vector<double> D_;
 
   public:
-    J(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double>C, vector<double>D) {
-      Au_ = Au; Av_ = Av; B_ = B; C_ = C; D_ = D;
+    J(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double> C, vector<double> D)
+    :Au_(Au), Av_(Av),B_(B), C_(C),D_(D)
+    {
+
     }
 
     matrix<double> operator()(vector<double> x) {
