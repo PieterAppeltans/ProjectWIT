@@ -10,7 +10,7 @@ template<typename U, typename V>void newton_raphson(U & F,V & J,vector<double>& 
   double res = norm_1(F(x0));
   matrix<double> A;
   matrix<double> inverse;
-
+  std::cout << res << std::endl;
   while(res > tol){
     A = J(x0);
     permutation_matrix<std::size_t> pm(A.size1());

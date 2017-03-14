@@ -11,7 +11,7 @@
 #include <boost/numeric/ublas/symmetric.hpp>
 #include <boost/numeric/ublas/operation.hpp>
 #include <boost/numeric/ublas/operation_blocked.hpp>
-
+#include <chrono>
 
 using namespace boost::numeric::ublas;
 
@@ -40,7 +40,7 @@ const double hv = 7.5*pow(10,-7);
 const double Kmu = 1.;
 const double Kmv = 1.;
 
-vector<double> Ru_simple(vector<double> u) {
+vector<double> Ru_simple(vector<double>u) {
   /* To calculate starting value of u for solving nonlinear system of equations */
   return (Vmu/0.4103)*u;
 }
@@ -180,16 +180,20 @@ class J {
 
 int main() {
   /* Read and store mesh information */
+  auto t1 = std::chrono::high_resolution_clock::now();
   matrix<double> vertices = mesh::read_vertices();
   matrix<double> triangles = mesh::read_triangles(vertices);
   matrix<int> boundaries = mesh::read_boundaries(vertices);
+  auto t2 = std::chrono::high_resolution_clock::now();
   std::cout << "Input data successfully read:" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
   std::cout << "Number of vertices :" << vertices.size1() << std::endl;
   std::cout << "Number of triangles:" << triangles.size1() <<std::endl;
   /* Calculate righthand side vector integrals */
+  t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_B(vertices.size1(), vertices.size1());
-  vector<double> R(vertices.size1());
-  vector<double> S(vertices.size1());
   symmetric_adaptor<matrix<double>, lower> B(init_B);
   for (unsigned t = 0; t < triangles.size1(); ++t) {
     int a = triangles(t, 0);
@@ -204,9 +208,14 @@ int main() {
     B(c, c) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + 6*vertices(c, 0));
   }
   B *= (1/60);
+  t2 = std::chrono::high_resolution_clock::now();
   std::cout << "B matrix successfully assembled" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
 
   /* Calculate first part of stiffness matrix A */
+  t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_A(vertices.size1(), vertices.size1());
   matrix<double> I_U(2,2);
   matrix<double> I_V(2,2);
@@ -247,8 +256,13 @@ int main() {
     A_V(b, c) += GGT_V(1, 2);
     A_V(c, c) += GGT_V(2, 2);
   }
+  t2 = std::chrono::high_resolution_clock::now();
   std::cout << "A matrices assembled." << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
   /* Boundary condition integrals: second part of A and a constant vector term */
+  t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_C(vertices.size1(), vertices.size1());
   symmetric_adaptor<matrix<double>, lower> C(init_C);
   vector<double> D(vertices.size1());
@@ -261,17 +275,31 @@ int main() {
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
+  t2 = std::chrono::high_resolution_clock::now();
   std::cout << "C matrix and D vector assembled." << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
   /* Root finding for nonlinear system of equations */
+  t1 = std::chrono::high_resolution_clock::now();
   F F_funct(A_U, A_V, B, C, D);
   J J_funct(A_U, A_V, B, C, D);
-
+  t2 = std::chrono::high_resolution_clock::now();
+  std::cout << "Functors are created" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
+  t1 = std::chrono::high_resolution_clock::now();
   scalar_vector<double> one(vertices.size1(),1);
   vector<double> guess(vertices.size1()*2);
   project(guess,range(0,vertices.size1())) = Ru_simple(uamb*one);
   project(guess,range(vertices.size1(),2*vertices.size1())) = Rv_simple(uamb*one);
+  t2 = std::chrono::high_resolution_clock::now();
   std::cout<< "Initial guess calculated" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
   newton_raphson(F_funct,J_funct,guess,pow(10,-7));
-  std::cout << guess << std::endl;
+  //std::cout << guess << std::endl;
   return 0;
 }
