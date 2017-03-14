@@ -31,3 +31,6 @@ http://www.boost.org/doc/libs/1_63_0/libs/math/doc/html/math_toolkit/roots/roots
 
 # Boost inverse
 http://www.crystalclearsoftware.com/cgi-bin/boost_wiki/wiki.pl?LU_Matrix_Inversion
+
+#UMFPACK -> Spaarse matrix solver
+http://stackoverflow.com/questions/3989094/umfpack-and-boosts-ublas-sparse-matrix
