@@ -14,10 +14,12 @@
 #include <boost/numeric/ublas/operation.hpp>
 #include <boost/numeric/ublas/operation_blocked.hpp>
 #include <chrono>
+#include <boost-numeric-bindings/boost/numeric/bindings/umfpack/umfpack.hpp>
 
 using namespace boost::numeric::ublas;
 
-/* COMPILE WItH: g++ -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
+/* Configure boost-numeric-bindings in /usr/local to be able to use the compile statement on the next line. */
+/* COMPILE WITH: g++ -I/usr/local/include/boost-numeric-bindings -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
 mesh_reader.hpp needs those two flags for reading files */
 
 class FJ {
