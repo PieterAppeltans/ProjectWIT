@@ -50,11 +50,11 @@ vector<double> Rv_simple(vector<double> u) {
   return rq*Ru_simple(u);
 }
 
-vector<double> Ru(vector<double> const & u, vector<double> const & v) {
+vector<double> Ru(vector<double> u, vector<double> v) {
   return element_div(Vmu*u,element_prod(scalar_vector<double>(u.size(),0.4103)+u,scalar_vector<double>(u.size(),1)+(v/27.2438)));
 }
 
-vector<double> Rv(vector<double> const & u, vector<double> const& v) {
+vector<double> Rv(vector<double> u, vector<double> v) {
   return 0.97*Ru(u,v)+ element_div(Vmfv*scalar_vector<double>(u.size(),1),scalar_vector<double>(u.size(),1)+(u/0.1149));
 }
 
@@ -113,9 +113,9 @@ class FJ {
       project(func,range(0,n)) = prod(Au_,u) + prod(B_,Ru(u,v)) + hu*(prod(C_,u) - D_*uamb);
       project(func,range(n,2*n)) = -prod(Av_,v) + prod(B_,Rv(u,v)) - hv*(prod(C_,v) - D_*vamb);
       project(JAC,range(0,n),range(0, n)) = Au_ + prod(B_,dRudu(u,v)) + hu*C_;
-      project(JAC,range(n+1,2*n),range(0,n)) = prod(B_,dRudv(u,v));
-      project(JAC,range(n+1,2*n),range(0,n)) = prod(B_,dRvdu(u,v));
-      project(JAC,range(n+1,2*n),range(n+1,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
+      project(JAC,range(n,2*n),range(0,n)) = prod(B_,dRudv(u,v));
+      project(JAC,range(n,2*n),range(0,n)) = prod(B_,dRvdu(u,v));
+      project(JAC,range(n,2*n),range(n,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
       return std::make_tuple(func, JAC);
     }
 };
@@ -169,9 +169,9 @@ class J {
       vector<double> v = project(x,range(n,2*n));
       matrix<double> JAC(2*n, 2*n);
       project(JAC,range(0,n),range(0, n)) = Au_ + prod(B_,dRudu(u,v)) + hu*C_;
-      project(JAC,range(n+1,2*n),range(0,n)) = prod(B_,dRudv(u,v));
-      project(JAC,range(n+1,2*n),range(0,n)) = prod(B_,dRvdu(u,v));
-      project(JAC,range(n+1,2*n),range(n+1,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
+      project(JAC,range(n,2*n),range(0,n)) = prod(B_,dRudv(u,v));
+      project(JAC,range(n,2*n),range(0,n)) = prod(B_,dRvdu(u,v));
+      project(JAC,range(n,2*n),range(n,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
       return JAC;
     }
 };
@@ -183,7 +183,9 @@ int main() {
   matrix<double> vertices = mesh::read_vertices();
   matrix<double> triangles = mesh::read_triangles(vertices);
   matrix<int> boundaries = mesh::read_boundaries(vertices);
-
+  std::cout << "Input data successfully read:" << std::endl;
+  std::cout << "Number of vertices :" << vertices.size1() << std::endl;
+  std::cout << "Number of triangles:" << triangles.size1() <<std::endl;
   /* Calculate righthand side vector integrals */
   matrix<double> init_B(vertices.size1(), vertices.size1());
   vector<double> R(vertices.size1());
@@ -202,6 +204,7 @@ int main() {
     B(c, c) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + 6*vertices(c, 0));
   }
   B *= (1/60);
+  std::cout << "B matrix successfully assembled" << std::endl;
 
   /* Calculate first part of stiffness matrix A */
   matrix<double> init_A(vertices.size1(), vertices.size1());
@@ -244,7 +247,7 @@ int main() {
     A_V(b, c) += GGT_V(1, 2);
     A_V(c, c) += GGT_V(2, 2);
   }
-
+  std::cout << "A matrices assembled." << std::endl;
   /* Boundary condition integrals: second part of A and a constant vector term */
   matrix<double> init_C(vertices.size1(), vertices.size1());
   symmetric_adaptor<matrix<double>, lower> C(init_C);
@@ -258,7 +261,7 @@ int main() {
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
-
+  std::cout << "C matrix and D vector assembled." << std::endl;
   /* Root finding for nonlinear system of equations */
   F F_funct(A_U, A_V, B, C, D);
   J J_funct(A_U, A_V, B, C, D);
@@ -266,9 +269,9 @@ int main() {
   scalar_vector<double> one(vertices.size1(),1);
   vector<double> guess(vertices.size1()*2);
   project(guess,range(0,vertices.size1())) = Ru_simple(uamb*one);
-  // Fout zit hier !!!!!!!!
-  project(guess,range(vertices.size1()+1,2*vertices.size1())) = Rv_simple(uamb*one);
-  //newton_raphson(F_funct,J_funct,guess,pow(10,-7));
+  project(guess,range(vertices.size1(),2*vertices.size1())) = Rv_simple(uamb*one);
+  std::cout<< "Initial guess calculated" << std::endl;
+  newton_raphson(F_funct,J_funct,guess,pow(10,-7));
   std::cout << guess << std::endl;
   return 0;
 }
