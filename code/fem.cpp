@@ -77,7 +77,7 @@ class F {
       vector<double> v = project(x,range(n,2*n));
       vector<double> func(2*n);
       project(func,range(0,n)) = prod(Au_,u) + prod(B_,Ru(u,v)) + hu*(prod(C_,u) - D_*uamb);
-      project(func,range(n,2*n)) = -prod(Av_,v) + prod(B_,Rv(u,v)) - hv*(prod(C_,v) - D_*vamb);
+      project(func,range(n,2*n)) = prod(Av_,v) - prod(B_,Rv(u,v)) + hv*(prod(C_,v) - D_*vamb);
       return func;
     }
 };
@@ -227,17 +227,24 @@ int main() {
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-  // scalar_vector<double> one(vertices.size1(),1);
-  // vector<double> guess(vertices.size1()*2);
-  // project(guess,range(0,vertices.size1())) = Ru_simple(uamb*one);
-  // project(guess,range(vertices.size1(),2*vertices.size1())) = Rv_simple(uamb*one);
+
+
   vector<double> guess = scalar_vector<double>(vertices.size1()*2,5.);
+  matrix<double> inverse_u_0 (vertices.size1(),vertices.size1());
+  InvertMatrix<double>(A_U+(Vmu/Kmu)*B+hu*C, inverse_u_0);
+  vector<double> u_0 = prod(inverse_u_0, hu*D*uamb);
+  matrix<double> inverse_v_0 (vertices.size1(),vertices.size1());
+  InvertMatrix<double>(A_V+hv*C, inverse_v_0);
+  vector<double> v_0 = prod(inverse_v_0, rq*(Vmu/Kmu)*prod(B,u_0)+hv*vamb*D);
+  project(guess,range(0,vertices.size1())) = v_0;
+  project(guess,range(vertices.size1(),2*vertices.size1())) = v_0;
+
   t2 = std::chrono::high_resolution_clock::now();
   std::cout<< "Initial guess calculated" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   newton_raphson(F_funct,J_funct,guess,pow(10,-7));
-  //std::cout << guess << std::endl;
+  std::cout << guess << std::endl;
   return 0;
 }
