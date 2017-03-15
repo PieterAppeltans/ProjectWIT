@@ -7,9 +7,9 @@ nb_triangles = size(triangles,1);
 nb_boundary = size(boundary,1);
 
 % In te vullen
-T = 25+273.15;
-n_u = 20.8/100;
-n_v = 0.04/100;
+T = -1+273.15;
+n_u = 2/100;
+n_v = 0.7/100;
 
 
 Du_r = 2.8e-10;
@@ -62,17 +62,4 @@ u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
 
-r = linspace(0,R);
-xlin = linspace(0,R,300);
-ylin = linspace(-R,R,300);
-[X,Y] = meshgrid(xlin,0);
-U = griddata(vertices(:,1),vertices(:,2),u_0,X,Y,'linear');
-V = griddata(vertices(:,1),vertices(:,2),v_0,X,Y,'linear');
-
-figure
-hold on
-plot(r,exact_u(r),'ro')
-plot(xlin,U,'bx')
-
-figure
-plot(xlin,V,'bx')
+make_contour_figure(vertices,u_0,v_0)
