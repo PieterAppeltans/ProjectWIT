@@ -34,3 +34,6 @@ http://www.crystalclearsoftware.com/cgi-bin/boost_wiki/wiki.pl?LU_Matrix_Inversi
 
 #UMFPACK -> Spaarse matrix solver
 http://stackoverflow.com/questions/3989094/umfpack-and-boosts-ublas-sparse-matrix
+
+MOGELIJK PROBLEEM:
+DIRECTION BOUNDARY (clockwise/counterclockwise)
