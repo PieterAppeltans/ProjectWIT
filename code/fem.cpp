@@ -14,12 +14,11 @@
 #include <boost/numeric/ublas/operation.hpp>
 #include <boost/numeric/ublas/operation_blocked.hpp>
 #include <chrono>
-#include <boost-numeric-bindings/boost/numeric/bindings/umfpack/umfpack.hpp>
 
 using namespace boost::numeric::ublas;
 
 /* Configure boost-numeric-bindings in /usr/local to be able to use the compile statement on the next line. */
-/* COMPILE WITH: g++ -I/usr/local/include/boost-numeric-bindings -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
+/* COMPILE WITH: g++ -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
 mesh_reader.hpp needs those two flags for reading files */
 
 class FJ {
@@ -228,10 +227,11 @@ int main() {
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-  scalar_vector<double> one(vertices.size1(),1);
-  vector<double> guess(vertices.size1()*2);
-  project(guess,range(0,vertices.size1())) = Ru_simple(uamb*one);
-  project(guess,range(vertices.size1(),2*vertices.size1())) = Rv_simple(uamb*one);
+  // scalar_vector<double> one(vertices.size1(),1);
+  // vector<double> guess(vertices.size1()*2);
+  // project(guess,range(0,vertices.size1())) = Ru_simple(uamb*one);
+  // project(guess,range(vertices.size1(),2*vertices.size1())) = Rv_simple(uamb*one);
+  vector<double> guess = scalar_vector<double>(vertices.size1()*2,5.);
   t2 = std::chrono::high_resolution_clock::now();
   std::cout<< "Initial guess calculated" << std::endl;
   std::cout << "This took: "

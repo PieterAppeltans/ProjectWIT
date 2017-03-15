@@ -8,24 +8,35 @@
 #include <iostream>
 
 using namespace boost::numeric::ublas;
+
+template<class T>
+bool InvertMatrix (const matrix<T>& input, matrix<T>& inverse) {
+  typedef permutation_matrix<std::size_t> pmatrix;
+  matrix<T> A(input);
+  pmatrix pm(A.size1());
+  int res = lu_factorize(A,pm);
+  if( res != 0 ) return false;
+  inverse.assign(identity_matrix<T>(A.size1()));
+  lu_substitute(A, pm, inverse);
+  return true;
+}
+
 template<typename U, typename V>void newton_raphson(U & F,V & J,vector<double>& x0,double tol){
-  double res = norm_1(F(x0));
+  double res = norm_inf(F(x0));
+  std::cout << "F(x0):" << F(x0) << std::endl;
+  int size = x0.size();
   matrix<double> A;
-  matrix<double> inverse;
+  matrix<double> inverse(size,size);
   std::cout << res << std::endl;
   while(res > tol){
     A = J(x0);
-    permutation_matrix<std::size_t> pm(A.size1());
-    int res = lu_factorize(A,pm);
-    if( res != 0 ) break;
-   	// create identity matrix of "inverse"
-   	inverse.assign(identity_matrix<double>(A.size1()));
-   	// backsubstitute to get the inverse
-   	lu_substitute(A, pm, inverse);
+    InvertMatrix(A, inverse);
+    std::cout << "Inverse size " << inverse.size1() << " " << inverse.size2() << std::endl;
     x0 = x0 - prod(inverse,F(x0));
-    res = norm_1(F(x0));
+    res = norm_inf(F(x0));
     std::cout << "Residu: "<< res << std::endl;
   }
+  
 }
 
 #endif
