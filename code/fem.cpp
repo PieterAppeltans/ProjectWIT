@@ -102,19 +102,27 @@ int main() {
   t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_B(vertices.size1(), vertices.size1());
   symmetric_adaptor<matrix<double>, lower> B(init_B);
+  B = set_zero(B);
+  std::cout << "B BEFORE : " << B << std::endl;
   for (unsigned t = 0; t < triangles.size1(); ++t) {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
     double area = triangles(t, 3);
-    B(a, a) += area*(6*vertices(a, 0) + 2*vertices(b, 0) + 2*vertices(c, 0));
-    B(b, a) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + vertices(c, 0));
-    B(c, a) += area*(2*vertices(a, 0) + vertices(b, 0) + 2*vertices(c, 0));
-    B(b, b) += area*(2*vertices(a, 0) + 6*vertices(b, 0) + 2*vertices(c, 0));
-    B(b, c) += area*(vertices(a, 0) + 2*vertices(b, 0) + 2*vertices(c, 0));
-    B(c, c) += area*(2*vertices(a, 0) + 2*vertices(b, 0) + 6*vertices(c, 0));
+    std::cout << std::endl;
+    B(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    std::cout<< B(a,a) << std::endl;
+    B(b, a) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
+    B(c, a) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
+    B(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
+    std::cout << "B(b,c): " << B(b,c) << "deel1: "<< area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0)) << std::endl;
+    B(b, c) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    B(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
+    std::cout << B << std::endl;
   }
-  B *= (1/60);
+  std::cout << "before division: " << B << std::endl;
+  B *= (1./60.);
+  std::cout << "after divison: " << B << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "B matrix successfully assembled" << std::endl;
   std::cout << "This took: "
@@ -123,7 +131,8 @@ int main() {
 
   /* Calculate first part of stiffness matrix A */
   t1 = std::chrono::high_resolution_clock::now();
-  matrix<double> init_A(vertices.size1(), vertices.size1());
+  matrix<double> init_A_U(vertices.size1(), vertices.size1());
+  matrix<double> init_A_V(vertices.size1(), vertices.size1());
   matrix<double> I_U(2,2);
   matrix<double> I_V(2,2);
   I_U(0,0) = DU_R;
@@ -133,8 +142,11 @@ int main() {
   matrix<double> G(3, 2);
   matrix<double> GGT_U(3, 3);
   matrix<double> GGT_V(3, 3);
-  symmetric_adaptor<matrix<double>, lower> A_U(init_A);
-  symmetric_adaptor<matrix<double>, lower> A_V(init_A);
+  matrix<double> temp(3, 3);
+  symmetric_adaptor<matrix<double>, lower> A_U(init_A_U);
+  symmetric_adaptor<matrix<double>, lower> A_V(init_A_V);
+  A_U = set_zero(A_U);
+  A_V = set_zero(A_V);
   for (unsigned t = 0; t < triangles.size1(); ++t) {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
@@ -146,10 +158,10 @@ int main() {
     G(0, 1) = (vertices(c, 0) - vertices(b, 0));
     G(1, 1) = (vertices(a, 0) - vertices(c, 0));
     G(2, 1) = (vertices(b, 0) - vertices(a, 0));
-    GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*block_prod<matrix<double>, 64>
-      (block_prod<matrix<double>,64>(G,I_U), trans(G));
-    GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*block_prod<matrix<double>, 64>
-      (block_prod<matrix<double>,64>(G,I_V), trans(G));
+    temp = prod(G,I_U);
+    GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*prod(temp, trans(G));
+    temp = prod(G,I_V);
+    GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*prod(temp, trans(G));
     A_U(a, a) += GGT_U(0, 0);
     A_U(b, a) += GGT_U(1, 0);
     A_U(c, a) += GGT_U(2, 0);
@@ -173,6 +185,7 @@ int main() {
   t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_C(vertices.size1(), vertices.size1());
   symmetric_adaptor<matrix<double>, lower> C(init_C);
+  C = set_zero(C);
   vector<double> D(vertices.size1());
   for (unsigned b = 0; b < boundaries.size1(); ++b) {
     double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
@@ -183,6 +196,11 @@ int main() {
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
+  std::cout << "A_U: " << A_U << std::endl;
+  std::cout << "A_V: " << A_V << std::endl;
+  std::cout << "B: " << B << std::endl;
+  std::cout << "C: " << C << std::endl;
+  std::cout << "D: " << D << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "C matrix and D vector assembled." << std::endl;
   std::cout << "This took: "

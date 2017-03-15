@@ -35,6 +35,7 @@ template<typename U, typename V>void newton_raphson(U & F,V & J,vector<double>& 
     x0 = x0 - prod(inverse,F(x0));
     res = norm_inf(F(x0));
     std::cout << "Residu: "<< res << std::endl;
+    std::cout << "Solution: "<< x0 << std::endl;
   }
 
 }

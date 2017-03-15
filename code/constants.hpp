@@ -70,4 +70,8 @@ matrix<double> dRvdv(vector<double> u, vector<double> v) {
   return rq*dRudv(u, v);
 }
 
+matrix<double> set_zero(matrix<double> m) {
+  return scalar_matrix<double>(m.size1(), m.size2(), 0.);
+}
+
 #endif
