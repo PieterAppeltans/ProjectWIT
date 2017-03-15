@@ -18,7 +18,7 @@ namespace mesh {
         /* index # is vertix id, contains x and y
         coordinate respectively of vertix, and
         a flag, 1 if boundary point 0 if not */
-        std::ifstream infile("../triangle/pear.1.node");
+        std::ifstream infile("../triangle/triangle.1.node");
         std::string line;
         double a, b, c, d, line_nb = 0;
         std::getline(infile, line);
@@ -49,7 +49,7 @@ namespace mesh {
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using
         the vertices matrix */
-        std::ifstream infile("../triangle/pear.1.ele");
+        std::ifstream infile("../triangle/triangle.1.ele");
         std::string line;
         int a, b, c, d, line_nb = 0;
         std::getline(infile, line);
@@ -83,7 +83,7 @@ namespace mesh {
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using
         the vertices matrix */
-        std::ifstream infile("../triangle/pear.1.poly");
+        std::ifstream infile("../triangle/triangle.1.poly");
         std::string line;
         int a, b, c, d, count = 0;
         std::getline(infile, line);
