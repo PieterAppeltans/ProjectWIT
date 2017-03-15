@@ -21,38 +21,6 @@ using namespace boost::numeric::ublas;
 /* COMPILE WITH: g++ -Wall -std=c++14 -O3 -lstdc++ -o fem.o fem.cpp
 mesh_reader.hpp needs those two flags for reading files */
 
-class FJ {
-  /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
-
-  private:
-    matrix<double> Au_;
-    matrix<double> Av_;
-    matrix<double> B_;
-    matrix<double> C_;
-    vector<double> D_;
-
-  public:
-    FJ(matrix<double> Au, matrix<double> Av, matrix<double> B, matrix<double>C, vector<double>D) {
-      Au_ = Au; Av_ = Av; B_ = B; C_ = C; D_ = D;
-    }
-
-    std::tuple<vector<double>, matrix<double>> operator()(vector<double> x) {
-      /* x = [uT vT]T */
-      int n = Au_.size1();
-      vector<double> u = project(x,range(0,n));
-      vector<double> v = project(x,range(n,2*n));
-      vector<double> func(2*n);
-      matrix<double> JAC(2*n, 2*n);
-      project(func,range(0,n)) = prod(Au_,u) + prod(B_,Ru(u,v)) + hu*(prod(C_,u) - D_*uamb);
-      project(func,range(n,2*n)) = -prod(Av_,v) + prod(B_,Rv(u,v)) - hv*(prod(C_,v) - D_*vamb);
-      project(JAC,range(0,n),range(0, n)) = Au_ + prod(B_,dRudu(u,v)) + hu*C_;
-      project(JAC,range(n,2*n),range(0,n)) = prod(B_,dRudv(u,v));
-      project(JAC,range(n,2*n),range(0,n)) = prod(B_,dRvdu(u,v));
-      project(JAC,range(n,2*n),range(n,2*n)) = -1*Av_ + prod(B_,dRvdv(u,v)) - hv*C_;
-      return std::make_tuple(func, JAC);
-    }
-};
-
 class F {
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
 
@@ -128,6 +96,8 @@ int main() {
             << " milliseconds" << std::endl;
   std::cout << "Number of vertices :" << vertices.size1() << std::endl;
   std::cout << "Number of triangles:" << triangles.size1() <<std::endl;
+  //std::cout << triangles << std::endl;
+  //std::cout << vertices << std::endl;
   /* Calculate righthand side vector integrals */
   t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_B(vertices.size1(), vertices.size1());
@@ -193,6 +163,7 @@ int main() {
     A_V(b, c) += GGT_V(1, 2);
     A_V(c, c) += GGT_V(2, 2);
   }
+
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "A matrices assembled." << std::endl;
   std::cout << "This took: "
@@ -236,7 +207,7 @@ int main() {
   matrix<double> inverse_v_0 (vertices.size1(),vertices.size1());
   InvertMatrix<double>(A_V+hv*C, inverse_v_0);
   vector<double> v_0 = prod(inverse_v_0, rq*(Vmu/Kmu)*prod(B,u_0)+hv*vamb*D);
-  project(guess,range(0,vertices.size1())) = v_0;
+  project(guess,range(0,vertices.size1())) = u_0;
   project(guess,range(vertices.size1(),2*vertices.size1())) = v_0;
 
   t2 = std::chrono::high_resolution_clock::now();

@@ -27,7 +27,7 @@ template<typename U, typename V>void newton_raphson(U & F,V & J,vector<double>& 
   int size = x0.size();
   matrix<double> A;
   matrix<double> inverse(size,size);
-  std::cout << res << std::endl;
+  std::cout << "Residu:" << res << std::endl;
   while(res > tol){
     A = J(x0);
     InvertMatrix(A, inverse);
@@ -36,7 +36,7 @@ template<typename U, typename V>void newton_raphson(U & F,V & J,vector<double>& 
     res = norm_inf(F(x0));
     std::cout << "Residu: "<< res << std::endl;
   }
-  
+
 }
 
 #endif
