@@ -12,6 +12,7 @@ for line in vi:
 	for l in range(0,2):
 		t[l] = str(float(t[l])/100.)
 	vertices.append(t)
+	print vertices
 	s = " ".join(t)
 	vo.write(s)
 	vo.write("\n")

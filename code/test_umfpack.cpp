@@ -1,3 +1,6 @@
+extern "C" {
+#include <umfpack.h>
+}
 #include <iostream>
     #include <boost/numeric/bindings/traits/ublas_vector.hpp>
     #include <boost/numeric/bindings/traits/ublas_sparse.hpp>
@@ -29,4 +32,5 @@
       umf::solve (A, X, B, Numeric);
 
       std::cout << X << std::endl;  // output: [5](1,2,3,4,5)
-    } 
+	  return 0;
+    }

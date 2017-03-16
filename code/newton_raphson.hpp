@@ -23,15 +23,15 @@ bool InvertMatrix (const matrix<T>& input, matrix<T>& inverse) {
 
 template<typename U, typename V>void newton_raphson(U & F,V & J,vector<double>& x0,double tol){
   double res = norm_inf(F(x0));
-  std::cout << "F(x0):" << F(x0) << std::endl;
+  //std::cout << "F(x0):" << F(x0) << std::endl;
   int size = x0.size();
   matrix<double> A;
   matrix<double> inverse(size,size);
-  std::cout << res << std::endl;
+  std::cout << "Residu:" << res << std::endl;
   while(res > tol){
     A = J(x0);
     InvertMatrix(A, inverse);
-    std::cout << "Inverse size " << inverse.size1() << " " << inverse.size2() << std::endl;
+    //std::cout << "Inverse size " << inverse.size1() << " " << inverse.size2() << std::endl;
     x0 = x0 - prod(inverse,F(x0));
     res = norm_inf(F(x0));
     std::cout << "Residu: "<< res << std::endl;

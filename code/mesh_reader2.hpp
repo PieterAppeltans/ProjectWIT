@@ -6,15 +6,13 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/ublas/matrix_proxy.hpp>
-
-using namespace boost::numeric::ublas;
+#include <Eigen/Dense>
+using namespace Eigen;
+typedef Matrix<int,Dynamic,Dynamic> MatrixXi;
 
 namespace mesh {
 
-    matrix<double> read_vertices() {
+    MatrixXd read_vertices() {
         /* index # is vertix id, contains x and y
         coordinate respectively of vertix, and
         a flag, 1 if boundary point 0 if not */
@@ -25,7 +23,7 @@ namespace mesh {
         std::istringstream iss(line);
         iss >> a >> b >> c;
         int nb_nodes = a;
-        matrix<double> vertices(nb_nodes, 3);
+        MatrixXd vertices(nb_nodes, 3);
 
         while (std::getline(infile, line)) {
             std::istringstream iss(line);
@@ -44,7 +42,7 @@ namespace mesh {
         return vertices;
     }
 
-    matrix<double> read_triangles(matrix<double> &vertices) {
+    MatrixXd read_triangles(MatrixXd &vertices) {
         /* index # is triangle id, contains
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using
@@ -56,7 +54,7 @@ namespace mesh {
         std::istringstream iss(line);
         iss >> a >> b >> c;
         int nb_triangles = a;
-        matrix<double> triangles(nb_triangles, 4);
+        MatrixXd triangles(nb_triangles, 4);
 
         while (std::getline(infile, line)) {
             std::istringstream iss(line);
@@ -78,7 +76,7 @@ namespace mesh {
         return triangles;
     }
 
-    matrix<int> read_boundaries(matrix<double> &vertices) {
+    MatrixXi read_boundaries(MatrixXd &vertices) {
         /* index # is triangle id, contains
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using
@@ -91,7 +89,7 @@ namespace mesh {
         std::istringstream iss(line);
         iss >> a >> b;
         int nb_boundaries = a;
-        matrix<int> boundaries(nb_boundaries, 2);
+        MatrixXi boundaries(nb_boundaries, 2);
 
         while (std::getline(infile, line)) {
             std::istringstream iss(line);
@@ -108,8 +106,8 @@ namespace mesh {
             }
         }
 
-        matrix<int> boundaries_red(count, 2);
-        boundaries_red = project(boundaries, range(0, count), range(0, 2));
+        MatrixXi boundaries_red(count, 2);
+        boundaries_red = boundaries.block(0,0,count,2);
         return boundaries_red;
     }
 
