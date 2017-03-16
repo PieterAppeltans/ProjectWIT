@@ -126,29 +126,23 @@ int main() {
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-  std::cout << "Number of vertices :" << vertices.size1() << std::endl;
-  std::cout << "Number of triangles:" << triangles.size1() <<std::endl;
+
   /* Calculate righthand side vector integrals */
   t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_B(vertices.size1(), vertices.size1());
   symmetric_adaptor<matrix<double>, lower> B(init_B);
   B = set_zero(B);
-  std::cout << "B BEFORE : " << B << std::endl;
   for (unsigned t = 0; t < triangles.size1(); ++t) {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
     double area = triangles(t, 3);
-    std::cout << std::endl;
     B(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    std::cout<< B(a,a) << std::endl;
     B(b, a) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
     B(c, a) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
     B(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
-    std::cout << "B(b,c): " << B(b,c) << "deel1: "<< area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0)) << std::endl;
     B(b, c) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
     B(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
-    std::cout << B << std::endl;
   }
   std::cout << "before division: " << B << std::endl;
   B *= (1./60.);
@@ -165,18 +159,20 @@ int main() {
   matrix<double> init_A_V(vertices.size1(), vertices.size1());
   matrix<double> I_U(2,2);
   matrix<double> I_V(2,2);
-  I_U(0,0) = DU_R;
-  I_U(1,1) = DU_Z;
-  I_V(0,0) = DV_R;
-  I_V(1,1) = DV_Z;
   matrix<double> G(3, 2);
   matrix<double> GGT_U(3, 3);
   matrix<double> GGT_V(3, 3);
   matrix<double> temp(3, 3);
   symmetric_adaptor<matrix<double>, lower> A_U(init_A_U);
   symmetric_adaptor<matrix<double>, lower> A_V(init_A_V);
+  I_U = set_zero(I_U);
+  I_V = set_zero(I_V);
   A_U = set_zero(A_U);
   A_V = set_zero(A_V);
+  I_U(0,0) = DU_R;
+  I_U(1,1) = DU_Z;
+  I_V(0,0) = DV_R;
+  I_V(1,1) = DV_Z;
   for (unsigned t = 0; t < triangles.size1(); ++t) {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
@@ -192,6 +188,11 @@ int main() {
     GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*prod(temp, trans(G));
     temp = prod(G,I_V);
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*prod(temp, trans(G));
+    std::cout << "factor: " << (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6) << std::endl;
+    std::cout << "G: " << G << std::endl;
+    std::cout << "temp: " << temp << std::endl;
+    std::cout << "tempGT: " << prod(temp, trans(G)) << std::endl;
+    std::cout << "GGT_V: " << GGT_V << std::endl;
     A_U(a, a) += GGT_U(0, 0);
     A_U(b, a) += GGT_U(1, 0);
     A_U(c, a) += GGT_U(2, 0);
@@ -210,12 +211,16 @@ int main() {
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
+
   /* Boundary condition integrals: second part of A and a constant vector term */
   t1 = std::chrono::high_resolution_clock::now();
   matrix<double> init_C(vertices.size1(), vertices.size1());
   symmetric_adaptor<matrix<double>, lower> C(init_C);
   C = set_zero(C);
   vector<double> D(vertices.size1());
+  std::cout << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
   for (unsigned b = 0; b < boundaries.size1(); ++b) {
     double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
       pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
@@ -225,16 +230,15 @@ int main() {
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
-  std::cout << "A_U: " << A_U << std::endl;
-  std::cout << "A_V: " << A_V << std::endl;
-  std::cout << "B: " << B << std::endl;
-  std::cout << "C: " << C << std::endl;
-  std::cout << "D: " << D << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "C matrix and D vector assembled." << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
+
   /* Root finding for nonlinear system of equations */
   t1 = std::chrono::high_resolution_clock::now();
   F F_funct(A_U, A_V, B, C, D);
@@ -245,8 +249,6 @@ int main() {
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-
-
   vector<double> guess = scalar_vector<double>(vertices.size1()*2,5.);
   matrix<double> inverse_u_0 (vertices.size1(),vertices.size1());
   InvertMatrix<double>(A_U+(Vmu/Kmu)*B+hu*C, inverse_u_0);
@@ -256,13 +258,13 @@ int main() {
   vector<double> v_0 = prod(inverse_v_0, rq*(Vmu/Kmu)*prod(B,u_0)+hv*vamb*D);
   project(guess,range(0,vertices.size1())) = v_0;
   project(guess,range(vertices.size1(),2*vertices.size1())) = v_0;
-
   t2 = std::chrono::high_resolution_clock::now();
-  std::cout<< "Initial guess calculated" << std::endl;
-  std::cout << "This took: "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
-            << " milliseconds" << std::endl;
-  newton_raphson(F_funct,J_funct,guess,pow(10,-7));
-  std::cout << guess << std::endl;
+  // std::cout<< "Initial guess calculated" << std::endl;
+  // std::cout << "This took: "
+  //           << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+  //           << " milliseconds" << std::endl;
+  // newton_raphson(F_funct,J_funct,guess,pow(10,-7));
+  // std::cout << guess << std::endl;
+
   return 0;
 }
