@@ -13,8 +13,8 @@ const double ETA_U = 0.208;
 const double ETA_V = 0.0004;
 const double T_CEL = 298.15;
 
-const double vamb = (101300*ETA_U)/(8.314*T_CEL);
-const double uamb = (101300*ETA_V)/(8.314*T_CEL);
+const double uamb = (101300*ETA_U)/(8.314*T_CEL);
+const double vamb = (101300*ETA_V)/(8.314*T_CEL);
 const double Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T_CEL));
 const double Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T_CEL));
 const double hu = 7*pow(10,-7);
@@ -72,6 +72,10 @@ matrix<double> dRvdv(vector<double> u, vector<double> v) {
 
 matrix<double> set_zero(matrix<double> m) {
   return scalar_matrix<double>(m.size1(), m.size2(), 0.);
+}
+
+vector<double> set_zero(vector<double> m) {
+  return scalar_vector<double>(m.size(), 0.);
 }
 
 #endif

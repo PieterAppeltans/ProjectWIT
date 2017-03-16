@@ -160,11 +160,11 @@ int main() {
     GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*prod(temp, trans(G));
     temp = prod(G,I_V);
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*prod(temp, trans(G));
-    std::cout << "factor: " << (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6) << std::endl;
-    std::cout << "G: " << G << std::endl;
-    std::cout << "temp: " << temp << std::endl;
-    std::cout << "tempGT: " << prod(temp, trans(G)) << std::endl;
-    std::cout << "GGT_V: " << GGT_V << std::endl;
+    // std::cout << "factor: " << (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6) << std::endl;
+    // std::cout << "G: " << G << std::endl;
+    // std::cout << "temp: " << temp << std::endl;
+    // std::cout << "tempGT: " << prod(temp, trans(G)) << std::endl;
+    // std::cout << "GGT_V: " << GGT_V << std::endl;
     A_U(a, a) += GGT_U(0, 0);
     A_U(b, a) += GGT_U(1, 0);
     A_U(c, a) += GGT_U(2, 0);
@@ -191,9 +191,10 @@ int main() {
   symmetric_adaptor<matrix<double>, lower> C(init_C);
   C = set_zero(C);
   vector<double> D(vertices.size1());
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << std::endl;
+  D = set_zero(D);
+  // std::cout << std::endl;
+  // std::cout << std::endl;
+  // std::cout << std::endl;
   for (unsigned b = 0; b < boundaries.size1(); ++b) {
     double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
       pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
@@ -201,11 +202,16 @@ int main() {
     C(boundaries(b, 0), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
     C(boundaries(b, 1), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/4);
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
+    // std::cout << "D(boundaries(b,0)): " << len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.) << std::endl;
+    // std::cout << "b: " << b << std::endl;
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
+    // std::cout << "D(boundaries(b,1)): " << len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.) << std::endl;
+    // std::cout << "b: " << len << std::endl;
   }
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << std::endl;
+  // std::cout << "C: "<< C << std::endl;
+  // std::cout << std::endl;
+  // std::cout << std::endl;
+  // std::cout << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "C matrix and D vector assembled." << std::endl;
   std::cout << "This took: "
@@ -223,24 +229,54 @@ int main() {
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
 
-
+  std::cout << "A_U: " << A_U << std::endl;
+  std::cout << std::endl;
+  std::cout << "A_V: " << A_V << std::endl;
+  std::cout << std::endl;
+  std::cout << "B: " << B << std::endl;
+  std::cout << std::endl;
+  std::cout << "C: " << C << std::endl;
+  std::cout << std::endl;
+  std::cout << "D: " << D << std::endl;
+  std::cout << std::endl;
   vector<double> guess = vector<double>(vertices.size1()*2,5.);
   matrix<double> inverse_u_0 (vertices.size1(),vertices.size1());
+  inverse_u_0 = set_zero(inverse_u_0);
   InvertMatrix<double>(A_U+(Vmu/Kmu)*B+hu*C, inverse_u_0);
+  std::cout << "V/K" << Vmu/Kmu << std::endl;
+  std::cout << std::endl;
+  std::cout << "hu" << hu << std::endl;
+  std::cout << std::endl;
   vector<double> u_0 = prod(inverse_u_0, hu*D*uamb);
+
+  std::cout << std::endl;
+  std::cout << std::endl;
   matrix<double> inverse_v_0 (vertices.size1(),vertices.size1());
+  inverse_v_0 = set_zero(inverse_v_0);
   InvertMatrix<double>(A_V+hv*C, inverse_v_0);
   vector<double> v_0 = prod(inverse_v_0, rq*(Vmu/Kmu)*prod(B,u_0)+hv*vamb*D);
+  std::cout << "v_0" << v_0 << std::endl;
+  std::cout << std::endl;
+  std::cout << "inverse_v_0" << inverse_v_0 << std::endl;
+  std::cout << std::endl;
+  std::cout << "second factor" << rq*(Vmu/Kmu)*prod(B,u_0)+hv*vamb*D << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+  std::cout << "uamb: " << uamb << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+
+
   project(guess,range(0,vertices.size1())) = u_0;
   project(guess,range(vertices.size1(),2*vertices.size1())) = v_0;
-  //std::cout << "Initial guess" << guess << std::endl;
+  std::cout << "Initial guess" << guess << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
-  // std::cout<< "Initial guess calculated" << std::endl;
-  // std::cout << "This took: "
-  //           << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
-  //           << " milliseconds" << std::endl;
-  // newton_raphson(F_funct,J_funct,guess,pow(10,-7));
-  // std::cout << guess << std::endl;
+  std::cout<< "Initial guess calculated" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
+  newton_raphson(F_funct,J_funct,guess,pow(10,-15));
+  std::cout << guess << std::endl;
 
   return 0;
 }
