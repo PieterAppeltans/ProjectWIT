@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <Eigen/SparseCore>
 #include <Eigen/Dense>
@@ -6,6 +5,9 @@
 #include "constants2.hpp"
 #include "newton_raphson2.hpp"
 #include <chrono>
+// Compile commando:
+// g++ -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./test.o
+
 typedef Eigen::SparseMatrix<double> SpMat;
 using Eigen::MatrixXd;
 typedef Matrix<double, Dynamic, 1> VectorXd;
