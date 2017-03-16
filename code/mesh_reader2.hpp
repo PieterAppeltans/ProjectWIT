@@ -12,7 +12,7 @@ typedef Matrix<int,Dynamic,Dynamic> MatrixXi;
 
 namespace mesh {
 
-    MatrixXd read_vertices(string location) {
+    MatrixXd read_vertices(std::string location) {
         /* index # is vertix id, contains x and y
         coordinate respectively of vertix, and
         a flag, 1 if boundary point 0 if not */
@@ -42,7 +42,7 @@ namespace mesh {
         return vertices;
     }
 
-    MatrixXd read_triangles(MatrixXd &vertices,string location) {
+    MatrixXd read_triangles(MatrixXd &vertices,std::string location) {
         /* index # is triangle id, contains
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using
@@ -76,7 +76,7 @@ namespace mesh {
         return triangles;
     }
 
-    MatrixXi read_boundaries(MatrixXd &vertices,string location) {
+    MatrixXi read_boundaries(MatrixXd &vertices,std::string location) {
         /* index # is triangle id, contains
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using
