@@ -50,7 +50,6 @@ class J {
     J(MatrixXd& Au, MatrixXd& Av,MatrixXd& B,MatrixXd& C,VectorXd& D)
     :Au_(Au), Av_(Av),B_(B), C_(C),D_(D)
     {
-
     }
 
     MatrixXd operator()(VectorXd& x) {
@@ -58,18 +57,21 @@ class J {
       int n = Au_.rows();
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
-      VectorXd func(2*n,2*n);
-      func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),B_*dRvdu(u,v),-Av_ + (B_*dRvdv(u,v)) - hv*C_;
+      MatrixXd func(2*n,2*n);
+      std::cout << "dRvdv"<< dRvdv(u,v)(5,5) << std::endl;
+      //func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),B_*dRvdu(u,v),-Av_ + (B_*dRvdv(u,v)) - hv*C_;
       return func;
     }
 };
 int main()
 {
   auto t1 = std::chrono::high_resolution_clock::now();
-  MatrixXd vertices = mesh::read_vertices();
-  MatrixXd triangles = mesh::read_triangles(vertices);
-  MatrixXi boundaries = mesh::read_boundaries(vertices);
+  string location = "../triangle/circle.1.ele";
+  MatrixXd vertices = mesh::read_vertices(location);
+  MatrixXd triangles = mesh::read_triangles(vertices,location);
+  MatrixXi boundaries = mesh::read_boundaries(vertices,location);
   auto t2 = std::chrono::high_resolution_clock::now();
+
   std::cout << "Input data successfully read:" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -106,6 +108,7 @@ int main()
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
+
   /* Calculate first part of stiffness matrix A */
   t1 = std::chrono::high_resolution_clock::now();
   MatrixXd A_U = MatrixXd::Zero(vertices.rows(), vertices.rows());
@@ -154,7 +157,7 @@ int main()
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   MatrixXd C = MatrixXd::Zero(vertices.rows(), vertices.rows());
-  VectorXd D = VectorXd(vertices.rows());
+  VectorXd D = VectorXd::Zero(vertices.rows());
   for (unsigned b = 0; b < boundaries.rows(); ++b) {
     double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
       pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
@@ -186,16 +189,19 @@ int main()
   VectorXd guess(vertices.rows()*2);
   VectorXd u_0 = (A_U+(Vmu/Kmu)*B+hu*C).colPivHouseholderQr().solve(hu*D*uamb);
   VectorXd v_0 = (A_V+hv*C).colPivHouseholderQr().solve(rq*(Vmu/Kmu)*B*u_0+hv*vamb*D);
+
+  //std::cerr << u_0 << std::endl;
+
   guess << u_0,v_0;
-  std::cout << "Initial guess" << guess << std::endl;
+  //std::cout << "Initial guess" << guess << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout<< "Initial guess calculated" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
 
-  //newton_raphson(F_funct,J_funct,guess,pow(10,-7));
-  //std::cout << guess << std::endl;
+  newton_raphson(F_funct,J_funct,guess,pow(10,-7));
+  std::cout << guess << std::endl;
 
   return 0;
 }

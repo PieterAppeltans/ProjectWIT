@@ -13,8 +13,8 @@ const double ETA_U = 0.208;
 const double ETA_V = 0.0004;
 const double T_CEL = 298.15;
 
-const double vamb = (101300*ETA_U)/(8.314*T_CEL);
-const double uamb = (101300*ETA_V)/(8.314*T_CEL);
+const double uamb = (101300*ETA_U)/(8.314*T_CEL);
+const double vamb = (101300*ETA_V)/(8.314*T_CEL);
 const double Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T_CEL));
 const double Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T_CEL));
 const double hu = 7*pow(10,-7);
@@ -58,7 +58,7 @@ MatrixXd dRudv(VectorXd& u,VectorXd& v) {
   DiagonalMatrix<double, Dynamic> m = res_vec.asDiagonal();
   return m;
 }
-
+// Na te kijkens
 MatrixXd dRvdu(VectorXd& u,VectorXd& v) {
   ArrayXd u_a = u.array();
   ArrayXd v_a = v.array();
@@ -70,8 +70,9 @@ MatrixXd dRvdu(VectorXd& u,VectorXd& v) {
 MatrixXd dRvdv(VectorXd& u,VectorXd& v) {
   ArrayXd u_a = u.array();
   ArrayXd v_a = v.array();
-  ArrayXd res_a =  rq*(-27.2438*Vmu*u_a)*((0.1149+u_a)*(27.2438+v_a)*(27.2438+v_a)).inverse();
+  ArrayXd res_a =  rq*(-27.2438*Vmu*u_a)*((0.1149+u_a)*(27.2438+v_a).pow(2)).inverse();
   VectorXd res_vec = res_a.matrix();
   DiagonalMatrix<double, Dynamic> m = res_vec.asDiagonal();
 }
+
 #endif
