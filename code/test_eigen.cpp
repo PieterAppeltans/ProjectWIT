@@ -67,7 +67,7 @@ class J {
 int main()
 {
   auto t1 = std::chrono::high_resolution_clock::now();
-  std::string location = "../triangle/circle.1";
+  std::string location = "../triangle/triangle.1";
   MatrixXd vertices = mesh::read_vertices(location+".node");
   MatrixXd triangles = mesh::read_triangles(vertices,location+".ele");
   MatrixXi boundaries = mesh::read_boundaries(vertices,location+".poly");
