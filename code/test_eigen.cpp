@@ -60,14 +60,6 @@ class J {
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
       MatrixXd func(2*n,2*n);
-      std::cout << "dRudu" << std::endl;
-      std::cout << dRudu(u,v) << std::endl;
-      std::cout << "dRudv" << std::endl;
-      std::cout << dRudv(u,v) << std::endl;
-      std::cout << "dRvdu" << std::endl;
-      std::cout << dRvdu(u,v) <<std::endl;
-      std::cout << "dRvdv" << std::endl;
-      std::cout << dRvdv(u,v) << std::endl;
       func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),-B_*dRvdu(u,v),Av_ - (B_*dRvdv(u,v)) + hv*C_;
       return func;
     }
@@ -75,7 +67,7 @@ class J {
 int main()
 {
   auto t1 = std::chrono::high_resolution_clock::now();
-  std::string location = "../triangle/triangle.1";
+  std::string location = "../triangle/pear.1";
   MatrixXd vertices = mesh::read_vertices(location+".node");
   MatrixXd triangles = mesh::read_triangles(vertices,location+".ele");
   MatrixXi boundaries = mesh::read_boundaries(vertices,location+".poly");
@@ -228,7 +220,7 @@ int main()
   //std::cerr << u_0 << std::endl;
 
   guess << u_0,v_0;
-
+  #ifdef
   std::cout << "A_U =" << std::endl;
   std::cout << A_U << std::endl;
   std::cout << "A_V =" << std::endl;
@@ -247,7 +239,7 @@ int main()
   std::cout << F_funct(guess) <<std::endl;
   std::cout << "Initial Jacobian = " << std::endl;
   std::cout << J_funct(guess);
-
+  #endif
   //std::cout << "Initial guess" << guess << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout<< "Initial guess calculated" << std::endl;
