@@ -1,8 +1,9 @@
 import matplotlib
+import numpy as np
+import scipy.interpolate
 from parse import *
 matplotlib.use('TkAgg')
 
-from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
@@ -13,18 +14,39 @@ def destroy(e):
     sys.exit()
 
 root = Tk.Tk()
-root.wm_title("Embedding in TK")
+root.wm_title("The Pear Project")
 
 vertices,elements = parse_input("circle.1")
+u,v = parse_u_v()
+print min(u),max(u),min(v),max(v)
+xmin = min(vertices[:,0])
+xmax = max(vertices[:,0])
+ymin = min(vertices[:,1])
+ymax = max(vertices[:,1])
+
+print len(u),len(vertices)
+xlin = np.linspace(xmin,xmax,300)
+ylin = np.linspace(ymin,xmax,300)
+
+X,Y = np.meshgrid(xlin,ylin)
+U = scipy.interpolate.griddata(vertices,u,(X,Y),'linear');
+V = scipy.interpolate.griddata(vertices,v,(X,Y),'linear');
+
 
 f = Figure(figsize=(5, 4), dpi=100)
-a = f.add_subplot(111)
+a_u = f.add_subplot(121)
 
-for elem in elements:
-    a.plot([vertices[elem[0]][0],vertices[elem[1]][0],vertices[elem[2]][0],vertices[elem[0]][0]], [vertices[elem[0]][1],vertices[elem[1]][1],vertices[elem[2]][1],vertices[elem[0]][1]],'k')
-a.set_title('CirclElements')
-a.set_xlabel('X axis label')
-a.set_ylabel('Y label')
+a_u.contourf(X,Y,U)
+a_u.set_title('Contour u(r,z)')
+a_u.set_xlabel('r(m)')
+a_u.set_ylabel('z(m)')
+
+a_v = f.add_subplot(122)
+
+a_v.contourf(X,Y,V)
+a_v.set_title('Contour v(r,z)')
+a_v.set_xlabel('r(m)')
+a_v.set_ylabel('z(m)')
 
 
 # a tk.DrawingArea
