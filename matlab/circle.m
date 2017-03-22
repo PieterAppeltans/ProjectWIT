@@ -7,9 +7,9 @@ nb_triangles = size(triangles,1);
 nb_boundary = size(boundary,1);
 
 % In te vullen
-T = -1+273.15;
-n_u = 2/100;
-n_v = 0.7/100;
+T = 25+273.15;
+n_u = 20.8/100;
+n_v = 0.04/100;
 
 
 Du_r = 2.8e-10;
@@ -61,5 +61,12 @@ end
 u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
+F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);A_v*v-B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)+hv*(C*v-D*Cv_amb)];
+J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[-B*dRvdu(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv) A_v-B*dRvdv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)+hv*C]];
+Fx = @(x) F(x(1:nb_vertices),x(nb_vertices+1:end));
 
-make_contour_figure(vertices,u_0,v_0)
+
+a = Ru(u,v,Vmu,Kmu,Kmv);
+min(a)
+max(a)
+%make_contour_figure(vertices,u_0,v_0)

@@ -275,7 +275,7 @@ int main() {
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-  newton_raphson(F_funct,J_funct,guess,pow(10,-15));
+  newton_raphson(F_funct,J_funct,guess,pow(10,-25));
   std::cout << guess << std::endl;
 
   return 0;

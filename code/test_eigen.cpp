@@ -34,7 +34,7 @@ class F {
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
       VectorXd func(2*n);
-      func << Au_*u + B_*Ru(u,v) + hu*(C_*u - D_*uamb),-Av_*v + B_*Rv(u,v) - hv*(C_*v - D_*vamb);
+      func << Au_*u + B_*Ru(u,v) + hu*(C_*u - D_*uamb),Av_*v - B_*Rv(u,v) + hv*(C_*v - D_*vamb);
       return func;
     }
 };
@@ -60,18 +60,17 @@ class J {
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
       MatrixXd func(2*n,2*n);
-      std::cout << "dRvdv"<< dRvdv(u,v)(5,5) << std::endl;
-      //func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),B_*dRvdu(u,v),-Av_ + (B_*dRvdv(u,v)) - hv*C_;
+      func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),-B_*dRvdu(u,v),Av_ - (B_*dRvdv(u,v)) + hv*C_;
       return func;
     }
 };
 int main()
 {
   auto t1 = std::chrono::high_resolution_clock::now();
-  std::string location = "../triangle/circle.1.ele";
-  MatrixXd vertices = mesh::read_vertices(location);
-  MatrixXd triangles = mesh::read_triangles(vertices,location);
-  MatrixXi boundaries = mesh::read_boundaries(vertices,location);
+  std::string location = "../triangle/circle.1";
+  MatrixXd vertices = mesh::read_vertices(location+".node");
+  MatrixXd triangles = mesh::read_triangles(vertices,location+".ele");
+  MatrixXi boundaries = mesh::read_boundaries(vertices,location+".poly");
   auto t2 = std::chrono::high_resolution_clock::now();
 
   std::cout << "Input data successfully read:" << std::endl;
@@ -110,7 +109,10 @@ int main()
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-
+  #ifdef DEBUG
+    std::cout << B << std::endl;
+    std::cout << std::endl<< std::endl<< std::endl<< std::endl;
+  #endif
   /* Calculate first part of stiffness matrix A */
   t1 = std::chrono::high_resolution_clock::now();
   MatrixXd A_U = MatrixXd::Zero(vertices.rows(), vertices.rows());
@@ -141,15 +143,21 @@ int main()
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_V*G.transpose());
     A_U(a, a) += GGT_U(0, 0);
     A_U(b, a) += GGT_U(1, 0);
+    A_U(a, b) += GGT_U(1, 0);
     A_U(c, a) += GGT_U(2, 0);
+    A_U(a, c) += GGT_U(2, 0);
     A_U(b, b) += GGT_U(1, 1);
     A_U(b, c) += GGT_U(1, 2);
+    A_U(c, b) += GGT_U(1, 2);
     A_U(c, c) += GGT_U(2, 2);
     A_V(a, a) += GGT_V(0, 0);
     A_V(b, a) += GGT_V(1, 0);
+    A_V(a, b) += GGT_V(1, 0);
     A_V(c, a) += GGT_V(2, 0);
+    A_V(a, c) += GGT_V(2, 0);
     A_V(b, b) += GGT_V(1, 1);
     A_V(b, c) += GGT_V(1, 2);
+    A_V(c, b) += GGT_V(1, 2);
     A_V(c, c) += GGT_V(2, 2);
   }
 
@@ -158,6 +166,12 @@ int main()
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
+  #ifdef DEBUG
+    std::cout << A_U << std::endl;
+    std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+    std::cout << A_V << std::endl;
+    std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+  #endif
   MatrixXd C = MatrixXd::Zero(vertices.rows(), vertices.rows());
   VectorXd D = VectorXd::Zero(vertices.rows());
   for (unsigned b = 0; b < boundaries.rows(); ++b) {
@@ -165,12 +179,19 @@ int main()
       pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
     C(boundaries(b, 0), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/4 + vertices(boundaries(b, 1), 0)/12);
     C(boundaries(b, 0), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
+    C(boundaries(b, 1), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
     C(boundaries(b, 1), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/4);
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
 
   t2 = std::chrono::high_resolution_clock::now();
+  #ifdef DEBUG
+    std::cout << C << std::endl;
+    std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+    std::cout << D << std::endl;
+  #endif
+  std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
   std::cout << "C matrix and D vector assembled." << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -202,8 +223,11 @@ int main()
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
 
-  newton_raphson(F_funct,J_funct,guess,pow(10,-7));
-  std::cout << guess << std::endl;
+  //newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  VectorXd A = Ru(u_0,v_0);
+  std::cout<<A.maxCoeff()<<std::endl;
+  std::cout <<A.minCoeff()<<std::endl;
+  mesh::write_result(u_0,v_0);
 
   return 0;
 }

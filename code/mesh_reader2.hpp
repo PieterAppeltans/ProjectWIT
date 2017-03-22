@@ -110,6 +110,16 @@ namespace mesh {
         boundaries_red = boundaries.block(0,0,count,2);
         return boundaries_red;
     }
+    void write_result(VectorXd& u,VectorXd& v){
+      std::ofstream output_u;
+      std::ofstream output_v;
+      output_u.open("../triangle/result_u.out");
+      output_u << u;
+      output_v.open("../triangle/result_v.out");
+      output_v << v;
+      output_u.close();
+      output_v.close();
+    }
 
 }
 
