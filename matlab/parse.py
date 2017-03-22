@@ -1,4 +1,4 @@
-filename = "circle.1"
+filename = "triangle.1"
 vi = open(filename+'.node','r')
 vo = open('vertices.dat','w')
 ti = open(filename+'.ele','r')
