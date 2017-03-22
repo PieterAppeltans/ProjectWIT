@@ -216,6 +216,23 @@ int main()
   //std::cerr << u_0 << std::endl;
 
   guess << u_0,v_0;
+
+  std::cout << "A_U =" << std::endl;
+  std::cout << A_U << std::endl;
+  std::cout << "A_V =" << std::endl;
+  std::cout << A_V << std::endl;
+  std::cout << "B =" << std::endl;
+  std::cout << B << std::endl;
+  std::cout << "C =" << std::endl;
+  std::cout << C << std::endl;
+  std::cout << "D =" << std::endl;
+  std::cout << D << std::endl;
+
+  std::cout << "Initial function value = " << std::endl;
+  std::cout << F_funct(guess);
+  std::cout << "Initial Jacobian = " << std::endl;
+  std::cout << J_funct(guess);
+
   //std::cout << "Initial guess" << guess << std::endl;
   t2 = std::chrono::high_resolution_clock::now();
   std::cout<< "Initial guess calculated" << std::endl;
