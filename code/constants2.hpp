@@ -24,8 +24,8 @@ const double Kmv = 27.2438;
 const double Kmfu = 0.1149;
 
 
-typedef Array<double,Dynamic,Dynamic> ArrayXXd;
-typedef Array<double,Dynamic,1> ArrayXd;
+typedef Eigen::Array<double,Dynamic,Dynamic> ArrayXXd;
+typedef Eigen::Array<double,Dynamic,1> ArrayXd;
 
 VectorXd Ru(VectorXd& u, VectorXd& v) {
   ArrayXd u_a = u.array();
@@ -45,7 +45,7 @@ VectorXd Rv(VectorXd& u, VectorXd& v) {
 MatrixXd dRudu(VectorXd& u,VectorXd& v) {
   ArrayXd u_a = u.array();
   ArrayXd v_a = v.array();
-  ArrayXd res_a = (Vmu*0.4103)*((1+v_a/27.2438)*(0.4103+u_a)*(0.4103+u_a)).inverse();
+  ArrayXd res_a = (Vmu*Kmu)*((1+v_a/Kmv)*(Kmu+u_a).pow(2)).inverse();
   VectorXd res_vec = res_a.matrix();
   DiagonalMatrix<double, Dynamic> m = res_vec.asDiagonal();
   return m;
@@ -54,7 +54,7 @@ MatrixXd dRudu(VectorXd& u,VectorXd& v) {
 MatrixXd dRudv(VectorXd& u,VectorXd& v) {
   ArrayXd u_a = u.array();
   ArrayXd v_a = v.array();
-  ArrayXd res_a = (-27.2438*Vmu*u_a)*((0.1149+u_a)*(27.2438+v_a).pow(2)).inverse();
+  ArrayXd res_a = (-Kmv*Vmu*u_a)*((Kmu+u_a)*(Kmv+v_a).pow(2)).inverse();
   VectorXd res_vec = res_a.matrix();
   DiagonalMatrix<double, Dynamic> m = res_vec.asDiagonal();
   return m;
@@ -63,19 +63,14 @@ MatrixXd dRudv(VectorXd& u,VectorXd& v) {
 MatrixXd dRvdu(VectorXd& u,VectorXd& v) {
   ArrayXd u_a = u.array();
   ArrayXd v_a = v.array();
-  ArrayXd res_a = rq*(Vmu*0.4103)*((1+v_a/27.2438)*(0.4103+u_a)*(0.4103+u_a)).inverse()-Vmfv*((Kmfu+u_a)*(Kmfu+u_a)).inverse();
+  ArrayXd res_a = rq*(Vmu*Kmu)*((1+v_a/Kmv)*(Kmu+u_a).pow(2)).inverse()-Vmfv*(Kmfu*(1+u_a/Kmfu).pow(2)).inverse();
   VectorXd res_vec = res_a.matrix();
   DiagonalMatrix<double, Dynamic> m = res_vec.asDiagonal();
   return m;
 }
 
 MatrixXd dRvdv(VectorXd& u,VectorXd& v) {
-  ArrayXd u_a = u.array();
-  ArrayXd v_a = v.array();
-  ArrayXd res_a =  rq*(-27.2438*Vmu*u_a)*((0.1149+u_a)*(27.2438+v_a).pow(2)).inverse();
-  VectorXd res_vec = res_a.matrix();
-  DiagonalMatrix<double, Dynamic> m = res_vec.asDiagonal();
-  return m;
+  return rq*dRudv(u,v);
 }
 
 #endif

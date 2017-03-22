@@ -60,6 +60,14 @@ class J {
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
       MatrixXd func(2*n,2*n);
+      std::cout << "dRudu" << std::endl;
+      std::cout << dRudu(u,v) << std::endl;
+      std::cout << "dRudv" << std::endl;
+      std::cout << dRudv(u,v) << std::endl;
+      std::cout << "dRvdu" << std::endl;
+      std::cout << dRvdu(u,v) <<std::endl;
+      std::cout << "dRvdv" << std::endl;
+      std::cout << dRvdv(u,v) << std::endl;
       func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),-B_*dRvdu(u,v),Av_ - (B_*dRvdv(u,v)) + hv*C_;
       return func;
     }
@@ -67,7 +75,7 @@ class J {
 int main()
 {
   auto t1 = std::chrono::high_resolution_clock::now();
-  std::string location = "../triangle/circle.1";
+  std::string location = "../triangle/triangle.1";
   MatrixXd vertices = mesh::read_vertices(location+".node");
   MatrixXd triangles = mesh::read_triangles(vertices,location+".ele");
   MatrixXi boundaries = mesh::read_boundaries(vertices,location+".poly");
@@ -124,9 +132,13 @@ int main()
   Eigen::Matrix<double,2,2> I_U;
   Eigen::Matrix<double,2,2> I_V;
   I_U(0,0) = DU_R;
+  I_U(1,0) = 0;
+  I_U(0,1) = 0;
   I_U(1,1) = DU_Z;
   I_V(0,0) = DV_R;
   I_V(1,1) = DV_Z;
+  I_V(1,0) = 0;
+  I_V(0,1) = 0;
   for (unsigned t = 0; t < triangles.rows(); ++t) {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
@@ -227,9 +239,12 @@ int main()
   std::cout << C << std::endl;
   std::cout << "D =" << std::endl;
   std::cout << D << std::endl;
-
+  std::cout << "u_0" << std::endl;
+  std::cout << u_0 << std::endl;
+  std::cout << "v_0" << std::endl;
+  std::cout << v_0 <<std::endl;
   std::cout << "Initial function value = " << std::endl;
-  std::cout << F_funct(guess);
+  std::cout << F_funct(guess) <<std::endl;
   std::cout << "Initial Jacobian = " << std::endl;
   std::cout << J_funct(guess);
 
@@ -240,11 +255,11 @@ int main()
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
 
-  //newton_raphson(F_funct,J_funct,guess,pow(10,-17));
-  VectorXd A = Ru(u_0,v_0);
-  std::cout<<A.maxCoeff()<<std::endl;
-  std::cout <<A.minCoeff()<<std::endl;
-  mesh::write_result(u_0,v_0);
+  newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  int n = vertices.rows();
+  VectorXd u = guess.head(n);
+  VectorXd v = guess.tail(n);
+  mesh::write_result(u,v);
 
   return 0;
 }
