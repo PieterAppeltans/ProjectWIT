@@ -1,7 +1,7 @@
-function [ M ] = dRudu( u,v, Vmu,Kmu,Kmv )
-%DRUDU Summary of this function goes here
-%   Detailed explanation goes here
- t = (Vmu*Kmu)./((1+v/Kmv).*(Kmu+u).^2);
- M = diag(t);
+function [ M ] = dRudu( u,v,Vmu,Kmu,Kmv )
+%DRUDU derivative of Ru function to u
+
+    M = diag((Vmu*Kmu)./((1+v/Kmv).*(Kmu+u).^2));
+ 
 end
 
