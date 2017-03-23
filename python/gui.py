@@ -16,7 +16,7 @@ def destroy(e):
 root = Tk.Tk()
 root.wm_title("The Pear Project")
 
-vertices,elements = parse_input("pear.1")
+vertices,elements = parse_input("circle.1")
 u,v = parse_u_v()
 
 xmin = min(vertices[:,0])
@@ -24,8 +24,7 @@ xmax = max(vertices[:,0])
 ymin = min(vertices[:,1])
 ymax = max(vertices[:,1])
 
-print vertices
-print xmin,xmax,ymin,ymax
+
 xlin = np.linspace(xmin,xmax,300)
 ylin = np.linspace(ymin,ymax,300)
 
@@ -37,14 +36,14 @@ V = scipy.interpolate.griddata(vertices,v,(X,Y),'linear');
 f = Figure(figsize=(5, 4), dpi=100)
 a_u = f.add_subplot(121)
 
-a_u.contourf(X,Y,U)
+a_u.contourf(X,Y,U,10)
 a_u.set_title('Contour u(r,z)')
 a_u.set_xlabel('r(m)')
 a_u.set_ylabel('z(m)')
 
 a_v = f.add_subplot(122)
 
-a_v.contourf(X,Y,V)
+a_v.contourf(X,Y,V,10)
 a_v.set_title('Contour v(r,z)')
 a_v.set_xlabel('r(m)')
 a_v.set_ylabel('z(m)')

@@ -67,7 +67,7 @@ class J {
 int main()
 {
   auto t1 = std::chrono::high_resolution_clock::now();
-  std::string location = "../triangle/pear.1";
+  std::string location = "../triangle/circle.1";
   MatrixXd vertices = mesh::read_vertices(location+".node");
   MatrixXd triangles = mesh::read_triangles(vertices,location+".ele");
   MatrixXi boundaries = mesh::read_boundaries(vertices,location+".poly");
@@ -247,7 +247,7 @@ int main()
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
 
-  newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  //newton_raphson(F_funct,J_funct,guess,pow(10,-17));
   int n = vertices.rows();
   VectorXd u = guess.head(n);
   VectorXd v = guess.tail(n);

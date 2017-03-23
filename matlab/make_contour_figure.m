@@ -2,9 +2,9 @@ function make_contour_figure(vertices,u,v)
 %MAKE_CONTOUR_FIGURE Summary of this function goes here
 %   Detailed explanation goes here
     xmin = 0;
-    xmax = 1;
-    ymin = 0;
-    ymax = 1;
+    xmax = 0.05;
+    ymin = -0.05;
+    ymax = 0.05;
     xlin = linspace(xmin,xmax,300);
     ylin = linspace(ymin,ymax,300);
     [X,Y] = meshgrid(xlin,ylin);
