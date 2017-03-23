@@ -1,8 +1,7 @@
 function [ M ] = dRvdv( u,v,rq,Vmu,Kmu,Kmv )
-%DRVDV Summary of this function goes here
-%   Detailed explanation goes here
+%DRVDV derivative of Rv to v
 
-M = rq*dRudv(u,v,Vmu,Kmu,Kmv);
+    M = rq*dRudv(u,v,Vmu,Kmu,Kmv);
 
 end
 

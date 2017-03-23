@@ -1,6 +1,6 @@
 function make_contour_figure(vertices,u,v)
-%MAKE_CONTOUR_FIGURE Summary of this function goes here
-%   Detailed explanation goes here
+%MAKE_CONTOUR_FIGURE makes contour figure
+
     xmin = 0;
     xmax = 1;
     ymin = 0;
@@ -10,7 +10,6 @@ function make_contour_figure(vertices,u,v)
     [X,Y] = meshgrid(xlin,ylin);
     U = griddata(vertices(:,1),vertices(:,2),u,X,Y,'linear');
     V = griddata(vertices(:,1),vertices(:,2),v,X,Y,'linear');
- 
 
     figure
     subplot(1,2,1)
