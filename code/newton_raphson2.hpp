@@ -16,8 +16,7 @@ template<typename U, typename V>void newton_raphson(U & F,V & J,VectorXd& x0,dou
     x0 = x1;
     std::cout << "Residu: "<< res << std::endl;
     it += 1;
-    std::cout << "Solution: "<< x0 << std::endl;
-  }
+    }
 
 }
 
