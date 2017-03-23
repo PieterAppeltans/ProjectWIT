@@ -16,17 +16,18 @@ def destroy(e):
 root = Tk.Tk()
 root.wm_title("The Pear Project")
 
-vertices,elements = parse_input("circle.1")
+vertices,elements = parse_input("pear.1")
 u,v = parse_u_v()
-print min(u),max(u),min(v),max(v)
+
 xmin = min(vertices[:,0])
 xmax = max(vertices[:,0])
 ymin = min(vertices[:,1])
 ymax = max(vertices[:,1])
 
-print len(u),len(vertices)
+print vertices
+print xmin,xmax,ymin,ymax
 xlin = np.linspace(xmin,xmax,300)
-ylin = np.linspace(ymin,xmax,300)
+ylin = np.linspace(ymin,ymax,300)
 
 X,Y = np.meshgrid(xlin,ylin)
 U = scipy.interpolate.griddata(vertices,u,(X,Y),'linear');

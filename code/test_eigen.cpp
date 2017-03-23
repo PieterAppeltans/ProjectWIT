@@ -220,7 +220,7 @@ int main()
   //std::cerr << u_0 << std::endl;
 
   guess << u_0,v_0;
-  #ifdef
+  #ifdef DEBUG
   std::cout << "A_U =" << std::endl;
   std::cout << A_U << std::endl;
   std::cout << "A_V =" << std::endl;
