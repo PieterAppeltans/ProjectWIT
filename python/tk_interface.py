@@ -9,7 +9,7 @@ matplotlib.use('TkAgg')
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-simulation_options = {"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],"Refrigerator":[7,20.8,0]}
+simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],"Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder innducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
 TEMP = 0.
 NU = 0.
 NV = 0.
@@ -102,21 +102,24 @@ class ResultPlot(Frame):
             V = scipy.interpolate.griddata(vertices,v,(X,Y),'linear');
 
 
-            f = Figure(figsize=(5, 4), dpi=100)
+            f = Figure()
             a_u = f.add_subplot(121)
 
-            a_u.contourf(X,Y,U,10)
+            a_u_cont = a_u.contourf(X,Y,U,10)
             a_u.set_title('Contour u(r,z)')
             a_u.set_xlabel('r(m)')
             a_u.set_ylabel('z(m)')
 
+            cbar = f.colorbar(a_u_cont)
+
             a_v = f.add_subplot(122)
 
-            a_v.contourf(X,Y,V,10)
+            a_v_cont = a_v.contourf(X,Y,V,10)
             a_v.set_title('Contour v(r,z)')
             a_v.set_xlabel('r(m)')
             a_v.set_ylabel('z(m)')
 
+            cbar = f.colorbar(a_v_cont)
 
             # a tk.DrawingArea
             canvas = FigureCanvasTkAgg(f, master=self)
@@ -163,11 +166,11 @@ class MeshField(Frame):
         self.button.grid(row=4)
 
 class InputField(Frame):
-
+    global simulation_options
     def preset_changed(self,arg):
-        self.temp.set(self.simulation_options.get(arg)[0])
-        self.nu.set(self.simulation_options.get(arg)[1])
-        self.nv.set(self.simulation_options.get(arg)[2])
+        self.temp.set(simulation_options.get(arg)[0])
+        self.nu.set(simulation_options.get(arg)[1])
+        self.nv.set(simulation_options.get(arg)[2])
 
     def createWidgets(self):
         self.label_option = Label(self, text="Choose preset:")
@@ -175,7 +178,7 @@ class InputField(Frame):
         self.option = StringVar(self)
         self.option.set("Custom preset") # default value
 
-        self.option_menu = OptionMenu(self, self.option,"Custom preset","Orchard", "Shelf life", "Refrigerator",command=self.preset_changed)
+        self.option_menu = OptionMenu(self, self.option,*simulation_options.keys(),command=self.preset_changed)
         self.option_menu.grid(row=0,column=1)
 
         self.label_temp = Label(self, text="Temprature:")
@@ -204,7 +207,6 @@ class InputField(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
-        self.simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],"Refrigerator":[7,20.8,0]}
         self.createWidgets()
 
 class Footer(Frame):

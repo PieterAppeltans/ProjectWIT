@@ -3,8 +3,8 @@ function make_contour_figure(vertices,u,v)
 
     xmin = 0;
     xmax = 0.05;
-    ymin = -0.05;
-    ymax = 0.05;
+    ymin = 0;
+    ymax = 0.1;
     xlin = linspace(xmin,xmax,300);
     ylin = linspace(ymin,ymax,300);
     [X,Y] = meshgrid(xlin,ylin);
@@ -16,10 +16,12 @@ function make_contour_figure(vertices,u,v)
     contourf(X,Y,U,10)
     xlim([xmin xmax])
     ylim([ymin ymax])
+    colorbar
     subplot(1,2,2)
     contourf(X,Y,V,10)
     xlim([xmin xmax])
     ylim([ymin ymax])
+    colorbar
     figure
     subplot(1,2,1)
     mesh(X,Y,U)
@@ -29,6 +31,6 @@ function make_contour_figure(vertices,u,v)
     mesh(X,Y,V)
     xlim([xmin xmax])
     ylim([ymin ymax])
-
+    
 end
 

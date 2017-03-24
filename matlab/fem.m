@@ -7,9 +7,9 @@ nb_triangles = size(triangles,1);
 nb_boundary = size(boundary,1);
 
 % In te vullen
-T = -1+273.15;
-n_u = 2/100;
-n_v = 0.7/100;
+T = 25+273.15;
+n_u = 20.8/100;
+n_v = 0.04/100;
 
 Du_r = 2.8e-10;
 Du_z = 1.1e-9;
@@ -58,6 +58,6 @@ u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
 Fx = @(x) norm(F(x(1:nb_vertices),x(nb_vertices+1:end)));
-[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-15));
+[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-13));
 
 make_contour_figure(vertices,u,v)
