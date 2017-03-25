@@ -7,9 +7,9 @@ nb_triangles = size(triangles,1);
 nb_boundary = size(boundary,1);
 
 % In te vullen
-T = 25+273.15;
+T = 20+273.15;
 n_u = 20.8/100;
-n_v = 0.04/100;
+n_v = 0/100;
 
 Du_r = 2.8e-10;
 Du_z = 1.1e-9;

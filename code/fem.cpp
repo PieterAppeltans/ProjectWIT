@@ -201,6 +201,7 @@ int main() {
     C(boundaries(b, 0), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/4 + vertices(boundaries(b, 1), 0)/12);
     C(boundaries(b, 0), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
     C(boundaries(b, 1), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/4);
+    // Nakijken -> 1 vergeten
     D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
     // std::cout << "D(boundaries(b,0)): " << len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.) << std::endl;
     // std::cout << "b: " << b << std::endl;
