@@ -5,7 +5,7 @@
 #include <chrono>
 
 // Compile command:
-// g++ -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./test.o
+// g++ -std=c++14 eigen_spaarse.cpp -o sparse.o -I/usr/local/include/eigen3
 
 // u = Cu = concentration O2, v = Cv = concentration CO2
 
@@ -14,8 +14,33 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1> VectorXd;
 
 #include "mesh_reader2.hpp"
 #include "constants3.hpp"
-//#include "newton_raphson3.hpp"
+#include "newton_raphson3.hpp"
+SpMat block(SpMat A,SpMat B,SpMat C, SpMat D){
+  SpMat R(2*A.rows(),2*A.rows());
+  int n = A.rows();
+  for (int k=0; k<A.outerSize(); ++k){
+    for (SparseMatrix<double>::InnerIterator it(A,k); it; ++it){
+      R.insert(it.row(),it.col())  = it.value();
+    }
+  }
+  for (int k=0; k<B.outerSize(); ++k){
+    for (SparseMatrix<double>::InnerIterator it(B,k); it; ++it){
+      R.insert(it.row(),n+it.col())  = it.value();
+    }
+  }
+  for (int k=0; k<C.outerSize(); ++k){
+    for (SparseMatrix<double>::InnerIterator it(C,k); it; ++it){
+      R.insert(n+it.row(),it.col())  = it.value();
+    }
+  }
+  for (int k=0; k<D.outerSize(); ++k){
+    for (SparseMatrix<double>::InnerIterator it(D,k); it; ++it){
+      R.insert(n+it.row(),n+it.col())  = it.value();
+    }
+  }
+  return D;
 
+}
 class F
 {
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
@@ -69,10 +94,7 @@ class J
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
       SpMat func(2*n,2*n);
-      func.block(0,0,n,n) = Au_ + B_*dRudu(u,v);
-      func.block(0,n,n,n) = hu*C_,B_*dRudv(u,v);
-      func.block(n,0,n,n) = -B_*dRvdu(u,v);
-      func.block(n,n,n,n) = Av_ - (B_*dRvdv(u,v)) + hv*C_;
+      func = block(Au_ + B_*dRudu(u,v)+hu*C_,B_*dRudv(u,v),-B_*dRvdu(u,v),Av_ - (B_*dRvdv(u,v)) + hv*C_);
       return func;
     }
 };
@@ -252,7 +274,7 @@ int main(int argc, char *argv[])
   std::cout << J_funct(guess);
   #endif
 
-  //newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  newton_raphson(F_funct,J_funct,guess,pow(10,-17));
 
   /* Write out the result for python matplotlib code */
 
