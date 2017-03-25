@@ -1,17 +1,24 @@
-#include <iostream>
-#include <Eigen/SparseCore>
-#include <Eigen/Dense>
 #include "mesh_reader2.hpp"
 #include "constants2.hpp"
 #include "newton_raphson2.hpp"
+
+#include <iostream>
+#include <Eigen/SparseCore>
+#include <Eigen/Dense>
 #include <chrono>
-// Compile commando:
+
+// Compile command:
 // g++ -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./test.o
+
+// u = Cu = concentration O2, v = Cv = concentration CO2
 
 typedef Eigen::SparseMatrix<double> SpMat;
 using Eigen::MatrixXd;
 typedef Matrix<double, Dynamic, 1> VectorXd;
-class F {
+
+
+class F
+{
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
 
   private:
@@ -25,11 +32,10 @@ class F {
     F(MatrixXd& Au, MatrixXd& Av,MatrixXd& B,MatrixXd& C,VectorXd& D)
     :Au_(Au), Av_(Av),B_(B), C_(C),D_(D)
     {
-
     }
 
-    VectorXd operator()(VectorXd& x) {
-      /* x = [uT vT]T */
+    VectorXd operator()(VectorXd& x)
+    {
       int n = Au_.rows();
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
@@ -38,7 +44,10 @@ class F {
       return func;
     }
 };
-class J {
+
+
+class J
+{
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
 
   private:
@@ -54,8 +63,8 @@ class J {
     {
     }
 
-    MatrixXd operator()(VectorXd& x) {
-      /* x = [uT vT]T */
+    MatrixXd operator()(VectorXd& x)
+    {
       int n = Au_.rows();
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
@@ -64,6 +73,8 @@ class J {
       return func;
     }
 };
+
+
 int main(int argc, char *argv[])
 {
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -81,44 +92,41 @@ int main(int argc, char *argv[])
   std::cout << "Number of vertices :" << vertices.rows() << std::endl;
   std::cout << "Number of triangles:" << triangles.rows() <<std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-  MatrixXd B = MatrixXd::Zero(vertices.rows(), vertices.rows());
 
-  //std::cout << "B BEFORE : " << B << std::endl;
-  for (unsigned t = 0; t < triangles.rows(); ++t) {
+  /* Calculate coefficient matrix B related to the respiration kinetics,
+  part of right hand side in system of nonlinear equations */
+
+  MatrixXd B = MatrixXd::Zero(vertices.rows(), vertices.rows());
+  for (unsigned t = 0; t < triangles.rows(); ++t)
+  {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
     double area = triangles(t, 3);
-    //std::cout << std::endl;
     B(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    //std::cout<< B(a,a) << std::endl;
     B(b, a) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
     B(a,b) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
     B(c, a) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
     B(a,c) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
     B(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
-    //std::cout << "B(b,c): " << B(b,c) << "deel1: "<< area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0)) << std::endl;
     B(b, c) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
     B(c,b) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
     B(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
-    //std::cout << B << std::endl;
   }
   B *= (1./60.);
-  //std::cout << "after divison: " << B << std::endl;
+
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "B matrix successfully assembled" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-  #ifdef DEBUG
-    std::cout << B << std::endl;
-    std::cout << std::endl<< std::endl<< std::endl<< std::endl;
-  #endif
-  /* Calculate first part of stiffness matrix A */
+
+  /* Calculate the first part of the stiffness matrix in the lefthand
+  side of the the nonlinear system, A */
+
   t1 = std::chrono::high_resolution_clock::now();
   MatrixXd A_U = MatrixXd::Zero(vertices.rows(), vertices.rows());
   MatrixXd A_V = MatrixXd::Zero(vertices.rows(), vertices.rows());
-
   Eigen::Matrix<double,3,2> G;
   Eigen::Matrix<double,3,3> GGT_U;
   Eigen::Matrix<double,3,3> GGT_V;
@@ -132,7 +140,8 @@ int main(int argc, char *argv[])
   I_V(1,1) = DV_Z;
   I_V(1,0) = 0;
   I_V(0,1) = 0;
-  for (unsigned t = 0; t < triangles.rows(); ++t) {
+  for (unsigned t = 0; t < triangles.rows(); ++t)
+  {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
@@ -144,7 +153,6 @@ int main(int argc, char *argv[])
     G(1, 1) = (vertices(a, 0) - vertices(c, 0));
     G(2, 1) = (vertices(b, 0) - vertices(a, 0));
     GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_U*G.transpose());
-
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_V*G.transpose());
     A_U(a, a) += GGT_U(0, 0);
     A_U(b, a) += GGT_U(1, 0);
@@ -171,15 +179,14 @@ int main(int argc, char *argv[])
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-  #ifdef DEBUG
-    std::cout << A_U << std::endl;
-    std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
-    std::cout << A_V << std::endl;
-    std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
-  #endif
+
+  /* Calculate the second part of the stiffness matrix (C) and the
+  second part of the righthand side (D) */
+
   MatrixXd C = MatrixXd::Zero(vertices.rows(), vertices.rows());
   VectorXd D = VectorXd::Zero(vertices.rows());
-  for (unsigned b = 0; b < boundaries.rows(); ++b) {
+  for (unsigned b = 0; b < boundaries.rows(); ++b)
+  {
     double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
       pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
     C(boundaries(b, 0), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/4 + vertices(boundaries(b, 1), 0)/12);
@@ -191,17 +198,17 @@ int main(int argc, char *argv[])
   }
 
   t2 = std::chrono::high_resolution_clock::now();
-  #ifdef DEBUG
-    std::cout << C << std::endl;
-    std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
-    std::cout << D << std::endl;
-  #endif
+
   std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
   std::cout << "C matrix and D vector assembled." << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-  /* Root finding for nonlinear system of equations */
+
+  /* Solve linearized problem with ambient concentrations as input_field
+  to obtain starting concentration values, then solve the nonlinear
+  system with Newton-Raphson */
+
   t1 = std::chrono::high_resolution_clock::now();
 
   t1 = std::chrono::high_resolution_clock::now();
@@ -218,9 +225,13 @@ int main(int argc, char *argv[])
   VectorXd u_0 = (A_U+(Vmu/Kmu)*B+hu*C).colPivHouseholderQr().solve(hu*D*uamb);
   VectorXd v_0 = (A_V+hv*C).colPivHouseholderQr().solve(rq*(Vmu/Kmu)*B*u_0+hv*vamb*D);
 
-  //std::cerr << u_0 << std::endl;
-
   guess << u_0,v_0;
+  t2 = std::chrono::high_resolution_clock::now();
+  std::cout<< "Initial guess calculated" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
+
   #ifdef DEBUG
   std::cout << "A_U =" << std::endl;
   std::cout << A_U << std::endl;
@@ -241,14 +252,11 @@ int main(int argc, char *argv[])
   std::cout << "Initial Jacobian = " << std::endl;
   std::cout << J_funct(guess);
   #endif
-  //std::cout << "Initial guess" << guess << std::endl;
-  t2 = std::chrono::high_resolution_clock::now();
-  std::cout<< "Initial guess calculated" << std::endl;
-  std::cout << "This took: "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
-            << " milliseconds" << std::endl;
 
   newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+
+  /* Write out the result for python matplotlib code */
+
   int n = vertices.rows();
   VectorXd u = guess.head(n);
   VectorXd v = guess.tail(n);

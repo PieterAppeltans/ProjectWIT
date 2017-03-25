@@ -6,16 +6,18 @@ import scipy.interpolate
 from parse import *
 import matplotlib
 matplotlib.use('TkAgg')
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],"Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder innducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
+
+simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],
+    "Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder innducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
 TEMP = 0.
 NU = 0.
 NV = 0.
 AREA = 0.
 ANGLE = 0.
 FILE_ = ""
+
 class Header(Frame):
 
     def createWidgets(self):
@@ -25,11 +27,11 @@ class Header(Frame):
         self.subtitle = Label(self,text="Set simulation conditions",font="Helvetica 10")
         self.subtitle.pack({"side": "top"})
 
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
         self.createWidgets()
+
 
 def next1(temp,nu,nv):
     print "Next 1"
@@ -43,8 +45,12 @@ def next1(temp,nu,nv):
         mesh_field = MeshField(master=root)
     except:
         tkMessageBox.showerror("Error", "Please enter a floating point number")
-def next2(file_,area,angle):
+
+
+def next2(file_,area,angle,compile):
     global AREA,ANGLE,FILE
+    if compile:
+        subprocess.call(["bash","compile_cpp.sh"],cwd=None)
     try:
         AREA = float(area)
         ANGLE = float(angle)
@@ -54,20 +60,19 @@ def next2(file_,area,angle):
     except:
         tkMessageBox.showerror("Error", "Please enter a floating point number")
     loading_screen = LoadingScreen(master=root)
-    #subprocess.call("pwd")
     try:
-        subprocess.call(["bash","run.sh",str(AREA),str(ANGLE),FILE],cwd="./")
+        subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
     except:
         tkMessageBox.showerror("Error", "An error occured during mesh generation")
     try:
-        subprocess.call(["bash","run2.sh",FILE],cwd="./")
+        subprocess.call(["bash","execute_cpp.sh",FILE],cwd=None)
     except:
         tkMessageBox.showerror("Error","An error occured during calculation")
     print "Done"
     loading_screen.destroy()
     plot = ResultPlot(master=root)
-    #subprocess.call(["exec triangle -p -a{} -q{} ../triangle/{}".format(AREA,ANGLE,FILE)],cwd="../triangle")
-    #subprocess.call("cd ../code/; ./test_eigen.o")
+
+
 class LoadingScreen(Frame):
     def __init__(self,master=None):
         Frame.__init__(self, master)
@@ -78,6 +83,8 @@ class LoadingScreen(Frame):
         self.loading_text = Label(self,text="Waiting on results (May take 1-5 minutes)",font="Helvetica 10")
         self.loading_text.pack()
         print "Creating text"
+
+
 class ResultPlot(Frame):
         global FILE
         def __init__(self, master=None):
@@ -150,6 +157,10 @@ class MeshField(Frame):
         self.label_area.grid(row=1)
         self.label_angle.grid(row=2)
 
+        self.compile = BooleanVar()
+        self.compile_menu = Checkbutton(self, text="Compile c++", variable=self.compile)
+        self.compile_menu.grid(row=3,column=1)
+
         self.area = StringVar()
         self.angle = StringVar()
 
@@ -162,8 +173,9 @@ class MeshField(Frame):
         self.entry_area.grid(row=1,column=1)
         self.entry_angle.grid(row=2,column=1)
 
-        self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),self.angle.get()))
+        self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),self.angle.get(),self.compile.get()))
         self.button.grid(row=4)
+
 
 class InputField(Frame):
     global simulation_options
@@ -209,17 +221,18 @@ class InputField(Frame):
         self.pack()
         self.createWidgets()
 
+
 class Footer(Frame):
 
     def createWidgets(self):
         self.footertext = Label(self,text="Pieter Appeltans & Lennart Bulteel",font="Helvetica 10")
         self.footertext.pack()
 
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack({"side": "bottom"})
         self.createWidgets()
+
 
 root = Tk()
 root.wm_title("Pear project")

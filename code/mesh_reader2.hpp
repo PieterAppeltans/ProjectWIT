@@ -28,8 +28,8 @@ namespace mesh {
         while (std::getline(infile, line)) {
             std::istringstream iss(line);
             if (iss >> a >> b >> c >> d) {
-                vertices(line_nb, 0) = b;
-                vertices(line_nb, 1) = c;
+                vertices(line_nb, 0) = b/1000.;
+                vertices(line_nb, 1) = c/1000.;
                 vertices(line_nb, 2) = d;
             }
             else {
