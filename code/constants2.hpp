@@ -11,12 +11,12 @@ const double rq = 0.97;
 /* Global variables for applicable storage scenario */
 const double ETA_U = 0.208;
 const double ETA_V = 0.0004;
-const double T_CEL = 298.15;
 
-const double uamb = (101300*ETA_U)/(8.314*T_CEL);
-const double vamb = (101300*ETA_V)/(8.314*T_CEL);
-const double Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T_CEL));
-const double Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T_CEL));
+
+double uamb;
+double vamb;
+double Vmfv;
+double Vmu;
 const double hu = 7*pow(10,-7);
 const double hv = 7.5*pow(10,-7);
 const double Kmu = 0.4103;
@@ -26,7 +26,13 @@ const double Kmfu = 0.1149;
 
 typedef Eigen::Array<double,Dynamic,Dynamic> ArrayXXd;
 typedef Eigen::Array<double,Dynamic,1> ArrayXd;
-
+void setConstants(double T,double ETA_U,double ETA_V){
+  uamb = (101300*ETA_U)/(8.314*T);
+  vamb = (101300*ETA_V)/(8.314*T);
+  Vmfv = 1.61*pow(10, -4)*exp((56700/8.314)*(1/293.15 - 1/T));
+  Vmu = 2.39*pow(10, -4)*exp((80200/8.314)*(1/293.15 - 1/T));
+  std::cout<<uamb<<" "<<vamb <<" "<<Vmfv<<" "<<Vmu << std::endl;
+}
 VectorXd Ru(VectorXd& u, VectorXd& v) {
   ArrayXd u_a = u.array();
   ArrayXd v_a = v.array();

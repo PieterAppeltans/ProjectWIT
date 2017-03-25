@@ -2,6 +2,7 @@ from Tkinter import *
 import subprocess
 import tkMessageBox
 import numpy as np
+import time
 import scipy.interpolate
 from parse import *
 import matplotlib
@@ -9,7 +10,7 @@ matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],
+simulation_options = {"1 Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],
     "Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder innducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
 TEMP = 0.
 NU = 0.
@@ -47,10 +48,8 @@ def next1(temp,nu,nv):
         tkMessageBox.showerror("Error", "Please enter a floating point number")
 
 
-def next2(file_,area,angle,compile):
-    global AREA,ANGLE,FILE
-    if compile:
-        subprocess.call(["bash","compile_cpp.sh"],cwd=None)
+def next2(file_,area,angle,matlab,compile):
+    global AREA,ANGLE,FILE,TEMP,NU,NV
     try:
         AREA = float(area)
         ANGLE = float(angle)
@@ -59,18 +58,26 @@ def next2(file_,area,angle,compile):
         mesh_field.destroy()
     except:
         tkMessageBox.showerror("Error", "Please enter a floating point number")
-    loading_screen = LoadingScreen(master=root)
-    try:
-        subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
-    except:
-        tkMessageBox.showerror("Error", "An error occured during mesh generation")
-    try:
-        subprocess.call(["bash","execute_cpp.sh",FILE],cwd=None)
-    except:
-        tkMessageBox.showerror("Error","An error occured during calculation")
-    print "Done"
-    loading_screen.destroy()
-    plot = ResultPlot(master=root)
+    vertices,elements = parse_input(FILE+".1")
+    mesh_plot = False
+    if matlab:
+        write_matlab(FILE,vertices,elements)
+        subprocess.call(["matlab","-nojvm","> fem.m"],cwd="../matlab")
+    else:
+        if compile:
+            subprocess.call(["bash","compile_cpp.sh"],cwd=None)
+        try:
+            subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
+            mesh_plot = MeshPlot(vertices,elements,master=root)
+        except:
+            tkMessageBox.showerror("Error", "An error occured during mesh generation")
+        try:
+            subprocess.call(["bash","execute_cpp.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
+        except:
+            tkMessageBox.showerror("Error","An error occured during calculation")
+        if mesh_plot:
+            mesh_plot.destroy()
+        plot = ResultPlot(vertices,elements,master=root)
 
 
 class LoadingScreen(Frame):
@@ -84,15 +91,31 @@ class LoadingScreen(Frame):
         self.loading_text.pack()
         print "Creating text"
 
+class MeshPlot(Frame):
+    def __init__(self,vertices,elements,master=None):
+        Frame.__init__(self,master)
+        self.pack()
+        self.create_mesh(vertices,elements)
+    def create_mesh(self,vertices,elements):
+        f = Figure()
+        a = f.add_subplot(111)
+        for elem in elements:
+            a.plot([vertices[int(elem[0])][0],vertices[int(elem[1])][0],vertices[int(elem[2])][0],vertices[int(elem[0])][0]], [vertices[int(elem[0])][1],vertices[int(elem[1])][1],vertices[int(elem[2])][1],vertices[int(elem[0])][1]],'k')
+        a.set_title('Mesh')
+        a.set_xlabel('r(m)')
+        a.set_ylabel('z(m)')
+        canvas = FigureCanvasTkAgg(f, master=self)
+        canvas.show()
+        canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
+        canvas._tkcanvas.pack(side="top", fill="both", expand=1)
 
 class ResultPlot(Frame):
         global FILE
-        def __init__(self, master=None):
-            Frame.__init__(self, master)
+        def __init__(self,vertices,elements, master=None):
+            Frame.__init__(self,master)
             self.pack()
-            self.create_plot()
-        def create_plot(self):
-            vertices,elements = parse_input(FILE+".1")
+            self.create_plot(vertices,elements)
+        def create_plot(self,vertices,elements):
             u,v = parse_u_v()
 
             xmin = min(vertices[:,0])
@@ -157,15 +180,19 @@ class MeshField(Frame):
         self.label_area.grid(row=1)
         self.label_angle.grid(row=2)
 
+        self.matlab = BooleanVar()
+        self.matlab_check = Checkbutton(self, text="Run with Matlab", variable=self.matlab)
+        self.matlab_check.grid(row=3)
+
         self.compile = BooleanVar()
         self.compile_menu = Checkbutton(self, text="Compile c++", variable=self.compile)
         self.compile_menu.grid(row=3,column=1)
 
-        self.area = StringVar()
-        self.angle = StringVar()
+        self.area = DoubleVar()
+        self.angle = DoubleVar()
 
-        self.area.set("0.00005")
-        self.angle.set("30")
+        self.area.set(5)
+        self.angle.set(30)
 
         self.entry_area = Entry(self,textvariable=self.area)
         self.entry_angle = Entry(self,textvariable=self.angle)
@@ -173,7 +200,7 @@ class MeshField(Frame):
         self.entry_area.grid(row=1,column=1)
         self.entry_angle.grid(row=2,column=1)
 
-        self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),self.angle.get(),self.compile.get()))
+        self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),self.angle.get(),self.matlab.get(),self.compile.get()))
         self.button.grid(row=4)
 
 
@@ -190,20 +217,20 @@ class InputField(Frame):
         self.option = StringVar(self)
         self.option.set("Custom preset") # default value
 
-        self.option_menu = OptionMenu(self, self.option,*simulation_options.keys(),command=self.preset_changed)
+        self.option_menu = OptionMenu(self, self.option,*sorted(simulation_options.keys()),command=self.preset_changed)
         self.option_menu.grid(row=0,column=1)
 
-        self.label_temp = Label(self, text="Temprature:")
-        self.label_nu = Label(self, text="Ambient oxigen concentration:")
-        self.label_nv = Label(self, text="Ambient oxigen concentration:")
+        self.label_temp = Label(self, text="Temprature(C):")
+        self.label_nu = Label(self, text="Ambient oxigen concentration(%):")
+        self.label_nv = Label(self, text="Ambient oxigen concentration(%):")
 
         self.label_temp.grid(row=1)
         self.label_nu.grid(row=2)
         self.label_nv.grid(row=3)
 
-        self.temp = StringVar()
-        self.nu = StringVar()
-        self.nv = StringVar()
+        self.temp = DoubleVar()
+        self.nu = DoubleVar()
+        self.nv = DoubleVar()
 
         self.entry_temp = Entry(self,textvariable=self.temp)
         self.entry_nu = Entry(self,textvariable=self.nu)

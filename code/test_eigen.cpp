@@ -77,6 +77,7 @@ class J
 
 int main(int argc, char *argv[])
 {
+  setConstants(atof(argv[2])+273.15,atof(argv[3])/100,atof(argv[4])/100);
   auto t1 = std::chrono::high_resolution_clock::now();
   std::string file_name = argv[1];
   std::string location = "../triangle/"+ file_name +".1";

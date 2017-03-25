@@ -6,7 +6,8 @@
 
 // Compile command:
 // g++ -std=c++14 eigen_spaarse.cpp -o sparse.o -I/usr/local/include/eigen3
-
+// Run command:
+// ./sparse.o filename
 // u = Cu = concentration O2, v = Cv = concentration CO2
 
 typedef Eigen::SparseMatrix<double> SpMat;
