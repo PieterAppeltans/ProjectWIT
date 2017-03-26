@@ -242,7 +242,10 @@ int main(int argc, char *argv[])
   VectorXd guess(vertices.rows()*2);
   SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
   SpMat T2 = A_V+hv*C;
+  std::cout << T1 << std::endl;
+  std::cout << T2 << std::endl;
   solver.factorize(T1);
+  std::cout << "Checkpoint" << std::endl;
   VectorXd u_0 = solver.solve(hu*D*uamb);
   solver.factorize(T2);
   VectorXd v_0 = solver.solve(rq*(Vmu/Kmu)*B*u_0+hv*vamb*D);

@@ -8,7 +8,9 @@
 #include <chrono>
 
 // Compile command:
-// g++ -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./test.o
+// g++ -std=c++14 test_eigen.cpp -O3 -DNDEBUG -o test.o -I/usr/local/include/eigen3
+// Run command:
+// ./test.o filename T(c) eta_u(%) eta_v(%)
 
 // u = Cu = concentration O2, v = Cv = concentration CO2
 
