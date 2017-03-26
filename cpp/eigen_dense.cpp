@@ -2,27 +2,21 @@
 #include <Eigen/Dense>
 #include <chrono>
 
-<<<<<<< HEAD:code/test_eigen.cpp
+
+
+#include "mesh_reader_eigen.hpp"
+#include "constants_dense.hpp"
+#include "newton_raphson_dense.hpp"
+
+using Eigen::MatrixXd;
+typedef Matrix<double, Dynamic, 1> VectorXd;
+
 // Compile command:
 // g++ -std=c++14 test_eigen.cpp -O3 -DNDEBUG -o test.o -I/usr/local/include/eigen3
 // Run command:
 // ./test.o filename T(c) eta_u(%) eta_v(%)
 
 // u = Cu = concentration O2, v = Cv = concentration CO2
-=======
-#include "mesh_reader_eigen.hpp"
-#include "constants_dense.hpp"
-#include "newton_raphson_dense.hpp"
->>>>>>> 660a1e9097d39d5cd40de087f10a291fbb31910e:cpp/eigen_dense.cpp
-
-using Eigen::MatrixXd;
-typedef Matrix<double, Dynamic, 1> VectorXd;
-
-// Compile command:
-// g++ -Wall -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./dense.o
-
-// u = Cu = concentration O2, v = Cv = concentration CO2
-
 
 class F
 {

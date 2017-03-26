@@ -14,7 +14,7 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1> VectorXd;
 
 // Compile command:
 // g++ -Wall -std=c++14 eigen_sparse.cpp -o sparse.o -I/usr/local/include/eigen3
-
+// run command : ./sparse.o filename
 // u = Cu = concentration O2, v = Cv = concentration CO2
 
 
@@ -134,22 +134,22 @@ int main(int argc, char *argv[])
   /* Calculate coefficient matrix B related to the respiration kinetics,
   part of right hand side in system of nonlinear equations */
 
-  SpMat B(vertices.rows(), vertices.rows());
+  SpMat B_init(vertices.rows(), vertices.rows());
   for (unsigned t = 0; t < triangles.rows(); ++t)
   {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
     double area = triangles(t, 3);
-    B.coeffRef(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    B.coeffRef(std::min(a,b),std::max(a,b)) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
-    B.coeffRef(std::min(c, a),std::max(c, a)) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
-    B.coeffRef(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
-    B.coeffRef(std::min(b, c),std::min(b, c)) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    B.coeffRef(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
+    B_init.coeffRef(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    B_init.coeffRef(std::min(a,b),std::max(a,b)) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
+    B_init.coeffRef(std::min(c, a),std::max(c, a)) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
+    B_init.coeffRef(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
+    B_init.coeffRef(std::min(b, c),std::min(b, c)) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    B_init.coeffRef(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
   }
-  B *= (1./60.);
-  B = B.selfadjointView<Eigen::Upper>();
+  B_init *= (1./60.);
+  SpMat B = B_init.selfadjointView<Eigen::Upper>();
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "B matrix successfully assembled" << std::endl;
   std::cout << "This took: "
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
   side of the the nonlinear system, A */
 
   t1 = std::chrono::high_resolution_clock::now();
-  SpMat A_U(vertices.rows(), vertices.rows());
-  SpMat A_V(vertices.rows(), vertices.rows());
+  SpMat A_U_init(vertices.rows(), vertices.rows());
+  SpMat A_V_init(vertices.rows(), vertices.rows());
   Eigen::Matrix<double,3,2> G;
   Eigen::Matrix<double,3,3> GGT_U;
   Eigen::Matrix<double,3,3> GGT_V;
@@ -189,21 +189,21 @@ int main(int argc, char *argv[])
     G(2, 1) = (vertices(b, 0) - vertices(a, 0));
     GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_U*G.transpose());
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_V*G.transpose());
-    A_U.coeffRef(a, a) += GGT_U(0, 0);
-    A_U.coeffRef(std::min(b, a),std::max(b, a)) += GGT_U(1, 0);
-    A_U.coeffRef(std::min(c, a),std::min(c, a)) += GGT_U(2, 0);
-    A_U.coeffRef(b, b) += GGT_U(1, 1);
-    A_U.coeffRef(std::min(b, c),std::max(b,c)) += GGT_U(1, 2);
-    A_U.coeffRef(c, c) += GGT_U(2, 2);
-    A_V.coeffRef(a, a) += GGT_V(0, 0);
-    A_V.coeffRef(std::min(b, a),std::max(b, a)) += GGT_V(1, 0);
-    A_V.coeffRef(std::min(c, a),std::min(c, a)) += GGT_V(2, 0);
-    A_V.coeffRef(b, b) += GGT_V(1, 1);
-    A_V.coeffRef(std::min(b, c),std::max(b,c)) += GGT_V(1, 2);
-    A_V.coeffRef(c, c) += GGT_V(2, 2);
+    A_U_init.coeffRef(a, a) += GGT_U(0, 0);
+    A_U_init.coeffRef(std::min(b, a),std::max(b, a)) += GGT_U(1, 0);
+    A_U_init.coeffRef(std::min(c, a),std::min(c, a)) += GGT_U(2, 0);
+    A_U_init.coeffRef(b, b) += GGT_U(1, 1);
+    A_U_init.coeffRef(std::min(b, c),std::max(b,c)) += GGT_U(1, 2);
+    A_U_init.coeffRef(c, c) += GGT_U(2, 2);
+    A_V_init.coeffRef(a, a) += GGT_V(0, 0);
+    A_V_init.coeffRef(std::min(b, a),std::max(b, a)) += GGT_V(1, 0);
+    A_V_init.coeffRef(std::min(c, a),std::min(c, a)) += GGT_V(2, 0);
+    A_V_init.coeffRef(b, b) += GGT_V(1, 1);
+    A_V_init.coeffRef(std::min(b, c),std::max(b,c)) += GGT_V(1, 2);
+    A_V_init.coeffRef(c, c) += GGT_V(2, 2);
   }
-  A_U = A_U.selfadjointView<Eigen::Upper>();
-  A_V = A_V.selfadjointView<Eigen::Upper>();
+  SpMat A_U = A_U_init.selfadjointView<Eigen::Upper>();
+  SpMat A_V = A_V_init.selfadjointView<Eigen::Upper>();
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "A matrices assembled." << std::endl;
   std::cout << "This took: "
@@ -254,12 +254,9 @@ int main(int argc, char *argv[])
   VectorXd guess(vertices.rows()*2);
   SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
   SpMat T2 = A_V+hv*C;
-<<<<<<< HEAD:code/eigen_spaarse.cpp
-  std::cout << T1 << std::endl;
-  std::cout << T2 << std::endl;
-=======
+
+
   solver.analyzePattern(T1);
->>>>>>> 660a1e9097d39d5cd40de087f10a291fbb31910e:cpp/eigen_sparse.cpp
   solver.factorize(T1);
   std::cout << "Checkpoint" << std::endl;
   VectorXd u_0 = solver.solve(hu*D*uamb);
