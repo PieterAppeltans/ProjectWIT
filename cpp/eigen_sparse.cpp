@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
 
-  #ifdef DEBUG
+  // #ifdef DEBUG
   std::cout << "A_U =" << std::endl;
   std::cout << A_U << std::endl;
   std::cout << "A_V =" << std::endl;
@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
   std::cout << F_funct(guess) <<std::endl;
   std::cout << "Initial Jacobian = " << std::endl;
   std::cout << J_funct(guess);
-  #endif
+  // #endif
 
   newton_raphson(F_funct,J_funct,guess,pow(10,-17));
 
