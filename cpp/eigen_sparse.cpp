@@ -50,7 +50,7 @@ SpMat block(SpMat A,SpMat B,SpMat C, SpMat D)
       R.insert(n+it.row(),n+it.col())  = it.value();
     }
   }
-  return D;
+  return R;
 }
 
 class F

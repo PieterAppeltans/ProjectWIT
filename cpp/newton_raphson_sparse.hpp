@@ -14,10 +14,11 @@ void newton_raphson(U& F,V& J,VectorXd& x0,double tol)
   double res = tol+1;
   VectorXd x1,step;
   std::cout << "Residu:" << res << std::endl;
-  SimplicialLDLT<SpMat> solver;
+  SparseLU<SpMat> solver;
   while(res > tol && it <maxit)
   {
-    solver.compute(J(x0));
+    solver.analyzePattern(J(x0));
+    solver.factorize(J(x0));
     x1 = x0- solver.solve(F(x0));
     res = (x1-x0).squaredNorm();
     x0 = x1;
