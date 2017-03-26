@@ -57,11 +57,18 @@ def next2(file_,area,angle,matlab,compile,version):
         mesh_field.destroy()
     except:
         tkMessageBox.showerror("Error", "Please enter a floating point number")
+    #try:
+    subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
     vertices,elements = parse_input(FILE+".1")
+    mesh_plot = MeshPlot(vertices,elements,master=root)
+    root.update()
+    #except:
+    #    tkMessageBox.showerror("Error", "An error occured during mesh generation")
+
     mesh_plot = False
     if matlab:
         write_matlab(FILE,vertices,elements)
-        subprocess.call(["matlab","-nojvm","> fem.m"],cwd="../matlab")
+        subprocess.call(["matlab","-nojvm","< fem.m"],cwd="../matlab")
     else:
         if compile:
             if version == "dense":
@@ -70,12 +77,6 @@ def next2(file_,area,angle,matlab,compile,version):
             elif version == "sparse":
                 subprocess.call(["bash","compile_cpp_sparse.sh"],cwd=None)
                 print "Sparse version compiled"
-        try:
-            subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
-            mesh_plot = MeshPlot(vertices,elements,master=root)
-            root.update()
-        except:
-            tkMessageBox.showerror("Error", "An error occured during mesh generation")
         try:
             if version == "dense":
                 print "Executing cpp dense version"

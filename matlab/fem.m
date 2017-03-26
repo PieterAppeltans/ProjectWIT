@@ -7,9 +7,9 @@ nb_triangles = size(triangles,1);
 nb_boundary = size(boundary,1);
 
 % In te vullen
-T = 20+273.15;
-n_u = 20.8/100;
-n_v = 0/100;
+T = -1+273.15;
+n_u = 2/100;
+n_v = 0.4/100;
 
 Du_r = 2.8e-10;
 Du_z = 1.1e-9;
@@ -38,6 +38,7 @@ A_v = zeros(nb_vertices,nb_vertices);
 B = zeros(nb_vertices,nb_vertices);
 C = zeros(nb_vertices,nb_vertices);
 D = zeros(nb_vertices,1);
+
 for i=1:nb_triangles
     area = Opp_triangle(vertices(triangles(i,:),:));
     A_u(triangles(i,:),triangles(i,:)) = A_u(triangles(i,:),triangles(i,:)) + A_local(area,vertices(triangles(i,:),:),Du_r,Du_z);

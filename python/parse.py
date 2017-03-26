@@ -29,7 +29,7 @@ def parse_input(filename):
 		for i in range(0,len(s)):
 			s[i] = int(s[i])-1
 		elements = np.append(elements,np.array([s]),axis=0)
-
+	print elements
 	vi.close()
 	ti.close()
 
@@ -47,7 +47,7 @@ def write_matlab(filename,vertices,elements):
 		vo.write(s)
 		vo.write("\n")
 	for e in elements:
-		e_str = np.char.mod('%f',e)
+		e_str = np.char.mod('%i',e+1)
 		s = " ".join(e_str)
 		to.write(s)
 		to.write("\n")
