@@ -1,1 +1,1 @@
-exec ./../code/test.o $1 $2 $3 $4
+exec ./../cpp/fem_gui.o $1 $2 $3 $4

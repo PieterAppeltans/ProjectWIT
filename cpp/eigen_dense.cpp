@@ -1,20 +1,19 @@
-#include "mesh_reader2.hpp"
-#include "constants2.hpp"
-#include "newton_raphson2.hpp"
-
 #include <iostream>
 #include <Eigen/SparseCore>
 #include <Eigen/Dense>
 #include <chrono>
 
-// Compile command:
-// g++ -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./test.o
-
-// u = Cu = concentration O2, v = Cv = concentration CO2
-
-typedef Eigen::SparseMatrix<double> SpMat;
 using Eigen::MatrixXd;
 typedef Matrix<double, Dynamic, 1> VectorXd;
+
+#include "mesh_reader_eigen.hpp"
+#include "constants_dense.hpp"
+#include "newton_raphson_dense.hpp"
+
+// Compile command:
+// g++ -Wall -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./dense.o
+
+// u = Cu = concentration O2, v = Cv = concentration CO2
 
 
 class F

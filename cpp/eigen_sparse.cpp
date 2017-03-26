@@ -1,47 +1,58 @@
 #include <iostream>
 #include <Eigen/SparseCore>
-#include <Eigen/SparseLU>
+// #include <Eigen/SparseLU>
+#include <Eigen/SparseCholesky>
 #include <Eigen/Dense>
 #include <chrono>
-
-// Compile command:
-// g++ -std=c++14 eigen_spaarse.cpp -o sparse.o -I/usr/local/include/eigen3
-// Run command:
-// ./sparse.o filename
-// u = Cu = concentration O2, v = Cv = concentration CO2
 
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 1> VectorXd;
 
-#include "mesh_reader2.hpp"
-#include "constants3.hpp"
-#include "newton_raphson3.hpp"
-SpMat block(SpMat A,SpMat B,SpMat C, SpMat D){
+#include "mesh_reader_eigen.hpp"
+#include "constants_sparse.hpp"
+#include "newton_raphson_sparse.hpp"
+
+// Compile command:
+// g++ -Wall -std=c++14 eigen_sparse.cpp -o sparse.o -I/usr/local/include/eigen3
+
+// u = Cu = concentration O2, v = Cv = concentration CO2
+
+
+SpMat block(SpMat A,SpMat B,SpMat C, SpMat D)
+{
   SpMat R(2*A.rows(),2*A.rows());
   int n = A.rows();
-  for (int k=0; k<A.outerSize(); ++k){
-    for (SparseMatrix<double>::InnerIterator it(A,k); it; ++it){
+  for (int k=0; k<A.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+    {
       R.insert(it.row(),it.col())  = it.value();
     }
   }
-  for (int k=0; k<B.outerSize(); ++k){
-    for (SparseMatrix<double>::InnerIterator it(B,k); it; ++it){
+  for (int k=0; k<B.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+    {
       R.insert(it.row(),n+it.col())  = it.value();
     }
   }
-  for (int k=0; k<C.outerSize(); ++k){
-    for (SparseMatrix<double>::InnerIterator it(C,k); it; ++it){
+  for (int k=0; k<C.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(C,k); it; ++it)
+    {
       R.insert(n+it.row(),it.col())  = it.value();
     }
   }
-  for (int k=0; k<D.outerSize(); ++k){
-    for (SparseMatrix<double>::InnerIterator it(D,k); it; ++it){
+  for (int k=0; k<D.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(D,k); it; ++it)
+    {
       R.insert(n+it.row(),n+it.col())  = it.value();
     }
   }
   return D;
-
 }
+
 class F
 {
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
@@ -103,6 +114,7 @@ class J
 
 int main(int argc, char *argv[])
 {
+  setConstants(atof(argv[2])+273.15,atof(argv[3])/100,atof(argv[4])/100);
   auto t1 = std::chrono::high_resolution_clock::now();
   std::string file_name = argv[1];
   std::string location = "../triangle/"+ file_name +".1";
@@ -238,12 +250,14 @@ int main(int argc, char *argv[])
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-  SparseLU<SpMat> solver;
+  SimplicialLDLT<SpMat> solver;
   VectorXd guess(vertices.rows()*2);
   SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
   SpMat T2 = A_V+hv*C;
+  solver.analyzePattern(T1);
   solver.factorize(T1);
   VectorXd u_0 = solver.solve(hu*D*uamb);
+  solver.analyzePattern(T2);
   solver.factorize(T2);
   VectorXd v_0 = solver.solve(rq*(Vmu/Kmu)*B*u_0+hv*vamb*D);
 

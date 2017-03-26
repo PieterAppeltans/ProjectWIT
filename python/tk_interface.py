@@ -35,7 +35,6 @@ class Header(Frame):
 
 
 def next1(temp,nu,nv):
-    print "Next 1"
     global TEMP,NU,NV,input_field,mesh_field,root
     try:
         TEMP = float(temp)
@@ -48,7 +47,7 @@ def next1(temp,nu,nv):
         tkMessageBox.showerror("Error", "Please enter a floating point number")
 
 
-def next2(file_,area,angle,matlab,compile):
+def next2(file_,area,angle,matlab,compile,version):
     global AREA,ANGLE,FILE,TEMP,NU,NV
     try:
         AREA = float(area)
@@ -65,7 +64,12 @@ def next2(file_,area,angle,matlab,compile):
         subprocess.call(["matlab","-nojvm","> fem.m"],cwd="../matlab")
     else:
         if compile:
-            subprocess.call(["bash","compile_cpp.sh"],cwd=None)
+            if version == "dense":
+                subprocess.call(["bash","compile_cpp_dense.sh"],cwd=None)
+                print "Dense version compiled"
+            elif version == "sparse":
+                subprocess.call(["bash","compile_cpp_sparse.sh"],cwd=None)
+                print "Sparse version compiled"
         try:
             subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
             mesh_plot = MeshPlot(vertices,elements,master=root)
@@ -100,7 +104,8 @@ class MeshPlot(Frame):
         f = Figure()
         a = f.add_subplot(111)
         for elem in elements:
-            a.plot([vertices[int(elem[0])][0],vertices[int(elem[1])][0],vertices[int(elem[2])][0],vertices[int(elem[0])][0]], [vertices[int(elem[0])][1],vertices[int(elem[1])][1],vertices[int(elem[2])][1],vertices[int(elem[0])][1]],'k')
+            a.plot([vertices[int(elem[0])][0],vertices[int(elem[1])][0],vertices[int(elem[2])][0],vertices[int(elem[0])][0]],
+                [vertices[int(elem[0])][1],vertices[int(elem[1])][1],vertices[int(elem[2])][1],vertices[int(elem[0])][1]],'k')
         a.set_title('Mesh')
         a.set_xlabel('r(m)')
         a.set_ylabel('z(m)')
@@ -161,32 +166,43 @@ class ResultPlot(Frame):
 
 
 class MeshField(Frame):
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
         self.createWidgets()
+
     def createWidgets(self):
+        self.label_version = Label(self, text="Choose cpp version:")
+        self.label_version.grid(row=0)
+        self.version = StringVar(self)
+        self.version.set("dense") # default value
+
+        self.version_menu = OptionMenu(self, self.version,"sparse","dense")
+        self.version_menu.grid(row=0,column=1)
+
+
         self.label_option = Label(self, text="Choose grid:")
-        self.label_option.grid(row=0)
+        self.label_option.grid(row=1)
         self.mesh = StringVar(self)
         self.mesh.set("pear") # default value
 
         self.mesh_menu = OptionMenu(self, self.mesh,"pear", "circle")
-        self.mesh_menu.grid(row=0,column=1)
+        self.mesh_menu.grid(row=1,column=1)
 
         self.label_area = Label(self, text="Area:")
         self.label_angle = Label(self, text="Angle:")
 
-        self.label_area.grid(row=1)
-        self.label_angle.grid(row=2)
+        self.label_area.grid(row=2)
+        self.label_angle.grid(row=3)
 
         self.matlab = BooleanVar()
-        self.matlab_check = Checkbutton(self, text="Run with Matlab", variable=self.matlab)
-        self.matlab_check.grid(row=3)
+        self.matlab_check = Checkbutton(self, text="Run with Matlab instead", variable=self.matlab)
+        self.matlab_check.grid(row=4)
 
         self.compile = BooleanVar()
         self.compile_menu = Checkbutton(self, text="Compile c++", variable=self.compile)
-        self.compile_menu.grid(row=3,column=1)
+        self.compile_menu.grid(row=4,column=1)
 
         self.area = DoubleVar()
         self.angle = DoubleVar()
@@ -197,15 +213,18 @@ class MeshField(Frame):
         self.entry_area = Entry(self,textvariable=self.area)
         self.entry_angle = Entry(self,textvariable=self.angle)
 
-        self.entry_area.grid(row=1,column=1)
-        self.entry_angle.grid(row=2,column=1)
+        self.entry_area.grid(row=2,column=1)
+        self.entry_angle.grid(row=3,column=1)
 
-        self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),self.angle.get(),self.matlab.get(),self.compile.get()))
-        self.button.grid(row=4)
+        self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),
+            self.angle.get(),self.matlab.get(),self.compile.get(),self.version.get()))
+        self.button.grid(row=5)
 
 
 class InputField(Frame):
+
     global simulation_options
+
     def preset_changed(self,arg):
         self.temp.set(simulation_options.get(arg)[0])
         self.nu.set(simulation_options.get(arg)[1])
