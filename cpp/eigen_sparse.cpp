@@ -1,37 +1,71 @@
-#include "mesh_reader2.hpp"
-#include "constants2.hpp"
-#include "newton_raphson2.hpp"
-
 #include <iostream>
 #include <Eigen/SparseCore>
+// #include <Eigen/SparseLU>
+#include <Eigen/SparseCholesky>
 #include <Eigen/Dense>
 #include <chrono>
 
+typedef Eigen::SparseMatrix<double> SpMat;
+typedef Eigen::Matrix<double, Eigen::Dynamic, 1> VectorXd;
+
+#include "mesh_reader_eigen.hpp"
+#include "constants_sparse.hpp"
+#include "newton_raphson_sparse.hpp"
+
 // Compile command:
-// g++ -std=c++14 test_eigen.cpp -O3 -DNDEBUG -o test.o -I/usr/local/include/eigen3
-// Run command:
-// ./test.o filename T(c) eta_u(%) eta_v(%)
+// g++ -Wall -std=c++14 eigen_sparse.cpp -o sparse.o -I/usr/local/include/eigen3
 
 // u = Cu = concentration O2, v = Cv = concentration CO2
 
-typedef Eigen::SparseMatrix<double> SpMat;
-using Eigen::MatrixXd;
-typedef Matrix<double, Dynamic, 1> VectorXd;
 
+SpMat block(SpMat A,SpMat B,SpMat C, SpMat D)
+{
+  SpMat R(2*A.rows(),2*A.rows());
+  int n = A.rows();
+  for (int k=0; k<A.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+    {
+      R.insert(it.row(),it.col())  = it.value();
+    }
+  }
+  for (int k=0; k<B.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+    {
+      R.insert(it.row(),n+it.col())  = it.value();
+    }
+  }
+  for (int k=0; k<C.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(C,k); it; ++it)
+    {
+      R.insert(n+it.row(),it.col())  = it.value();
+    }
+  }
+  for (int k=0; k<D.outerSize(); ++k)
+  {
+    for (SparseMatrix<double>::InnerIterator it(D,k); it; ++it)
+    {
+      R.insert(n+it.row(),n+it.col())  = it.value();
+    }
+  }
+  return D;
+}
 
 class F
 {
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
 
   private:
-    MatrixXd& Au_;
-    MatrixXd& Av_;
-    MatrixXd& B_;
-    MatrixXd& C_;
-    VectorXd& D_;
+    SpMat& Au_;
+    SpMat& Av_;
+    SpMat& B_;
+    SpMat& C_;
+    SpMat& D_;
 
   public:
-    F(MatrixXd& Au, MatrixXd& Av,MatrixXd& B,MatrixXd& C,VectorXd& D)
+    F(SpMat& Au, SpMat& Av,SpMat& B,SpMat& C,SpMat& D)
     :Au_(Au), Av_(Av),B_(B), C_(C),D_(D)
     {
     }
@@ -39,10 +73,12 @@ class F
     VectorXd operator()(VectorXd& x)
     {
       int n = Au_.rows();
-      VectorXd u = x.head(n);
-      VectorXd v = x.tail(n);
+      VectorXd u = x.head(n).sparseView();
+      VectorXd v = x.tail(n).sparseView();
       VectorXd func(2*n);
-      func << Au_*u + B_*Ru(u,v) + hu*(C_*u - D_*uamb),Av_*v - B_*Rv(u,v) + hv*(C_*v - D_*vamb);
+      VectorXd f1 = Au_*u + B_*Ru(u,v) + hu*(C_*u - D_*uamb);
+      VectorXd f2 = Av_*v - B_*Rv(u,v) + hv*(C_*v - D_*vamb);
+      func << f1,f2;
       return func;
     }
 };
@@ -53,25 +89,24 @@ class J
   /* Returns tuple containing two functors, one for the original expression and one for the Jacobian. */
 
   private:
-    MatrixXd& Au_;
-    MatrixXd& Av_;
-    MatrixXd& B_;
-    MatrixXd& C_;
-    VectorXd& D_;
-
+    SpMat& Au_;
+    SpMat& Av_;
+    SpMat& B_;
+    SpMat& C_;
+    SpMat& D_;
   public:
-    J(MatrixXd& Au, MatrixXd& Av,MatrixXd& B,MatrixXd& C,VectorXd& D)
+    J(SpMat& Au, SpMat& Av,SpMat& B,SpMat& C,SpMat& D)
     :Au_(Au), Av_(Av),B_(B), C_(C),D_(D)
     {
     }
 
-    MatrixXd operator()(VectorXd& x)
+    SpMat operator()(VectorXd& x)
     {
       int n = Au_.rows();
       VectorXd u = x.head(n);
       VectorXd v = x.tail(n);
-      MatrixXd func(2*n,2*n);
-      func << Au_ + B_*dRudu(u,v) + hu*C_,B_*dRudv(u,v),-B_*dRvdu(u,v),Av_ - (B_*dRvdv(u,v)) + hv*C_;
+      SpMat func(2*n,2*n);
+      func = block(Au_ + B_*dRudu(u,v)+hu*C_,B_*dRudv(u,v),-B_*dRvdu(u,v),Av_ - (B_*dRvdv(u,v)) + hv*C_);
       return func;
     }
 };
@@ -99,25 +134,22 @@ int main(int argc, char *argv[])
   /* Calculate coefficient matrix B related to the respiration kinetics,
   part of right hand side in system of nonlinear equations */
 
-  MatrixXd B = MatrixXd::Zero(vertices.rows(), vertices.rows());
+  SpMat B(vertices.rows(), vertices.rows());
   for (unsigned t = 0; t < triangles.rows(); ++t)
   {
     int a = triangles(t, 0);
     int b = triangles(t, 1);
     int c = triangles(t, 2);
     double area = triangles(t, 3);
-    B(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    B(b, a) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
-    B(a,b) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
-    B(c, a) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
-    B(a,c) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
-    B(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
-    B(b, c) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    B(c,b) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
-    B(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
+    B.coeffRef(a, a) += area*(6.*vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    B.coeffRef(std::min(a,b),std::max(a,b)) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
+    B.coeffRef(std::min(c, a),std::max(c, a)) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
+    B.coeffRef(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
+    B.coeffRef(std::min(b, c),std::min(b, c)) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    B.coeffRef(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
   }
   B *= (1./60.);
-
+  B = B.selfadjointView<Eigen::Upper>();
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "B matrix successfully assembled" << std::endl;
   std::cout << "This took: "
@@ -128,8 +160,8 @@ int main(int argc, char *argv[])
   side of the the nonlinear system, A */
 
   t1 = std::chrono::high_resolution_clock::now();
-  MatrixXd A_U = MatrixXd::Zero(vertices.rows(), vertices.rows());
-  MatrixXd A_V = MatrixXd::Zero(vertices.rows(), vertices.rows());
+  SpMat A_U(vertices.rows(), vertices.rows());
+  SpMat A_V(vertices.rows(), vertices.rows());
   Eigen::Matrix<double,3,2> G;
   Eigen::Matrix<double,3,3> GGT_U;
   Eigen::Matrix<double,3,3> GGT_V;
@@ -157,26 +189,21 @@ int main(int argc, char *argv[])
     G(2, 1) = (vertices(b, 0) - vertices(a, 0));
     GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_U*G.transpose());
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_V*G.transpose());
-    A_U(a, a) += GGT_U(0, 0);
-    A_U(b, a) += GGT_U(1, 0);
-    A_U(a, b) += GGT_U(1, 0);
-    A_U(c, a) += GGT_U(2, 0);
-    A_U(a, c) += GGT_U(2, 0);
-    A_U(b, b) += GGT_U(1, 1);
-    A_U(b, c) += GGT_U(1, 2);
-    A_U(c, b) += GGT_U(1, 2);
-    A_U(c, c) += GGT_U(2, 2);
-    A_V(a, a) += GGT_V(0, 0);
-    A_V(b, a) += GGT_V(1, 0);
-    A_V(a, b) += GGT_V(1, 0);
-    A_V(c, a) += GGT_V(2, 0);
-    A_V(a, c) += GGT_V(2, 0);
-    A_V(b, b) += GGT_V(1, 1);
-    A_V(b, c) += GGT_V(1, 2);
-    A_V(c, b) += GGT_V(1, 2);
-    A_V(c, c) += GGT_V(2, 2);
+    A_U.coeffRef(a, a) += GGT_U(0, 0);
+    A_U.coeffRef(std::min(b, a),std::max(b, a)) += GGT_U(1, 0);
+    A_U.coeffRef(std::min(c, a),std::min(c, a)) += GGT_U(2, 0);
+    A_U.coeffRef(b, b) += GGT_U(1, 1);
+    A_U.coeffRef(std::min(b, c),std::max(b,c)) += GGT_U(1, 2);
+    A_U.coeffRef(c, c) += GGT_U(2, 2);
+    A_V.coeffRef(a, a) += GGT_V(0, 0);
+    A_V.coeffRef(std::min(b, a),std::max(b, a)) += GGT_V(1, 0);
+    A_V.coeffRef(std::min(c, a),std::min(c, a)) += GGT_V(2, 0);
+    A_V.coeffRef(b, b) += GGT_V(1, 1);
+    A_V.coeffRef(std::min(b, c),std::max(b,c)) += GGT_V(1, 2);
+    A_V.coeffRef(c, c) += GGT_V(2, 2);
   }
-
+  A_U = A_U.selfadjointView<Eigen::Upper>();
+  A_V = A_V.selfadjointView<Eigen::Upper>();
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "A matrices assembled." << std::endl;
   std::cout << "This took: "
@@ -186,18 +213,18 @@ int main(int argc, char *argv[])
   /* Calculate the second part of the stiffness matrix (C) and the
   second part of the righthand side (D) */
 
-  MatrixXd C = MatrixXd::Zero(vertices.rows(), vertices.rows());
-  VectorXd D = VectorXd::Zero(vertices.rows());
+  SpMat C(vertices.rows(), vertices.rows());
+  SpMat D(vertices.rows(),1);
   for (unsigned b = 0; b < boundaries.rows(); ++b)
   {
     double len = sqrt(pow(vertices(boundaries(b, 0), 0) - vertices(boundaries(b, 1), 0), 2) +
       pow(vertices(boundaries(b, 0), 1) - vertices(boundaries(b, 1), 1), 2));
-    C(boundaries(b, 0), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/4 + vertices(boundaries(b, 1), 0)/12);
-    C(boundaries(b, 0), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
-    C(boundaries(b, 1), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
-    C(boundaries(b, 1), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/4);
-    D(boundaries(b,0)) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
-    D(boundaries(b,1)) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
+    C.coeffRef(boundaries(b, 0), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/4 + vertices(boundaries(b, 1), 0)/12);
+    C.coeffRef(boundaries(b, 0), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
+    C.coeffRef(boundaries(b, 1), boundaries(b, 0)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/12);
+    C.coeffRef(boundaries(b, 1), boundaries(b, 1)) += len*(vertices(boundaries(b, 0), 0)/12 + vertices(boundaries(b, 1), 0)/4);
+    D.coeffRef(boundaries(b,0),0) += len*(vertices(boundaries(b,0),0)/3.+vertices(boundaries(b,1),0)/6.);
+    D.coeffRef(boundaries(b,1),0) += len*(vertices(boundaries(b,0),0)/6.+vertices(boundaries(b,1),0)/3.);
   }
 
   t2 = std::chrono::high_resolution_clock::now();
@@ -223,10 +250,22 @@ int main(int argc, char *argv[])
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-
+  SimplicialLDLT<SpMat> solver;
   VectorXd guess(vertices.rows()*2);
-  VectorXd u_0 = (A_U+(Vmu/Kmu)*B+hu*C).colPivHouseholderQr().solve(hu*D*uamb);
-  VectorXd v_0 = (A_V+hv*C).colPivHouseholderQr().solve(rq*(Vmu/Kmu)*B*u_0+hv*vamb*D);
+  SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
+  SpMat T2 = A_V+hv*C;
+<<<<<<< HEAD:code/eigen_spaarse.cpp
+  std::cout << T1 << std::endl;
+  std::cout << T2 << std::endl;
+=======
+  solver.analyzePattern(T1);
+>>>>>>> 660a1e9097d39d5cd40de087f10a291fbb31910e:cpp/eigen_sparse.cpp
+  solver.factorize(T1);
+  std::cout << "Checkpoint" << std::endl;
+  VectorXd u_0 = solver.solve(hu*D*uamb);
+  solver.analyzePattern(T2);
+  solver.factorize(T2);
+  VectorXd v_0 = solver.solve(rq*(Vmu/Kmu)*B*u_0+hv*vamb*D);
 
   guess << u_0,v_0;
   t2 = std::chrono::high_resolution_clock::now();
