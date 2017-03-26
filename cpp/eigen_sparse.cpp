@@ -254,8 +254,14 @@ int main(int argc, char *argv[])
   VectorXd guess(vertices.rows()*2);
   SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
   SpMat T2 = A_V+hv*C;
+<<<<<<< HEAD:code/eigen_spaarse.cpp
+  std::cout << T1 << std::endl;
+  std::cout << T2 << std::endl;
+=======
   solver.analyzePattern(T1);
+>>>>>>> 660a1e9097d39d5cd40de087f10a291fbb31910e:cpp/eigen_sparse.cpp
   solver.factorize(T1);
+  std::cout << "Checkpoint" << std::endl;
   VectorXd u_0 = solver.solve(hu*D*uamb);
   solver.analyzePattern(T2);
   solver.factorize(T2);

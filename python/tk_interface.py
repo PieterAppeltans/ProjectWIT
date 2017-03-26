@@ -73,6 +73,7 @@ def next2(file_,area,angle,matlab,compile,version):
         try:
             subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
             mesh_plot = MeshPlot(vertices,elements,master=root)
+            root.update()
         except:
             tkMessageBox.showerror("Error", "An error occured during mesh generation")
         try:
@@ -287,7 +288,7 @@ class Footer(Frame):
 
 root = Tk()
 root.wm_title("Pear project")
-root.geometry("500x500")
+root.geometry("800x600")
 header = Header(master=root)
 input_field = InputField(master=root)
 footer = Footer(master=root)
