@@ -13,7 +13,6 @@ void newton_raphson(U& F,V& J,VectorXd& x0,double tol)
   int maxit = 1000;
   double res = tol+1;
   VectorXd x1,step;
-  std::cout << "Residu:" << res << std::endl;
   SparseLU<SpMat> solver;
   while(res > tol && it <maxit)
   {

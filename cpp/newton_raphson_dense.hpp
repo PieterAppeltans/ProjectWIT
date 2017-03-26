@@ -11,7 +11,6 @@ template<typename U, typename V>void newton_raphson(U & F,V & J,VectorXd& x0,dou
   int maxit = 1000;
   double res = tol+1;
   VectorXd x1;
-  std::cout << "Residu:" << res << std::endl;
   while(res > tol && it <maxit)
   {
     x1 = x0- J(x0).colPivHouseholderQr().solve(F(x0));
