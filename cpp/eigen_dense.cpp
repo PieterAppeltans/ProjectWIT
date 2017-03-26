@@ -1,14 +1,13 @@
 #include <iostream>
-#include <Eigen/SparseCore>
 #include <Eigen/Dense>
 #include <chrono>
-
-using Eigen::MatrixXd;
-typedef Matrix<double, Dynamic, 1> VectorXd;
 
 #include "mesh_reader_eigen.hpp"
 #include "constants_dense.hpp"
 #include "newton_raphson_dense.hpp"
+
+using Eigen::MatrixXd;
+typedef Matrix<double, Dynamic, 1> VectorXd;
 
 // Compile command:
 // g++ -Wall -std=c++14 test_eigen.cpp -o test.o -I/usr/local/include/eigen3 && ./dense.o

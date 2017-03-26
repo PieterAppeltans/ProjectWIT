@@ -19,9 +19,6 @@ const double Kmv = 27.2438;
 const double Kmfu = 0.1149;
 
 /* Global variables for applicable storage scenario */
-const double ETA_U = 0.208;
-const double ETA_V = 0.0004;
-const double T_CEL = 298.15;
 double uamb;
 double vamb;
 double Vmfv;
