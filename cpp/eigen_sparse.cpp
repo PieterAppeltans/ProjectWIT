@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     B_init.coeffRef(std::min(a,b),std::max(a,b)) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + vertices(c, 0));
     B_init.coeffRef(std::min(c, a),std::max(c, a)) += area*(2.*vertices(a, 0) + vertices(b, 0) + 2.*vertices(c, 0));
     B_init.coeffRef(b, b) += area*(2.*vertices(a, 0) + 6.*vertices(b, 0) + 2.*vertices(c, 0));
-    B_init.coeffRef(std::min(b, c),std::min(b, c)) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
+    B_init.coeffRef(std::min(b, c),std::max(b, c)) += area*(vertices(a, 0) + 2.*vertices(b, 0) + 2.*vertices(c, 0));
     B_init.coeffRef(c, c) += area*(2.*vertices(a, 0) + 2.*vertices(b, 0) + 6.*vertices(c, 0));
   }
   B_init *= (1./60.);
@@ -189,15 +189,19 @@ int main(int argc, char *argv[])
     G(2, 1) = (vertices(b, 0) - vertices(a, 0));
     GGT_U = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_U*G.transpose());
     GGT_V = (1/(2*area))*((vertices(a, 0)+vertices(b, 0)+vertices(c, 0))/6)*(G*I_V*G.transpose());
+    #ifdef DEBUG
+    std::cout<<"GGT_U" << std::endl << GGT_U << std::endl;
+    std::cout<<"GGT_V" << std::endl << GGT_V << std::endl;
+    #endif
     A_U_init.coeffRef(a, a) += GGT_U(0, 0);
     A_U_init.coeffRef(std::min(b, a),std::max(b, a)) += GGT_U(1, 0);
-    A_U_init.coeffRef(std::min(c, a),std::min(c, a)) += GGT_U(2, 0);
+    A_U_init.coeffRef(std::min(c, a),std::max(c, a)) += GGT_U(2, 0);
     A_U_init.coeffRef(b, b) += GGT_U(1, 1);
     A_U_init.coeffRef(std::min(b, c),std::max(b,c)) += GGT_U(1, 2);
     A_U_init.coeffRef(c, c) += GGT_U(2, 2);
     A_V_init.coeffRef(a, a) += GGT_V(0, 0);
     A_V_init.coeffRef(std::min(b, a),std::max(b, a)) += GGT_V(1, 0);
-    A_V_init.coeffRef(std::min(c, a),std::min(c, a)) += GGT_V(2, 0);
+    A_V_init.coeffRef(std::min(c, a),std::max(c, a)) += GGT_V(2, 0);
     A_V_init.coeffRef(b, b) += GGT_V(1, 1);
     A_V_init.coeffRef(std::min(b, c),std::max(b,c)) += GGT_V(1, 2);
     A_V_init.coeffRef(c, c) += GGT_V(2, 2);
@@ -271,7 +275,7 @@ int main(int argc, char *argv[])
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
 
-  // #ifdef DEBUG
+  #ifdef DEBUG
   std::cout << "A_U =" << std::endl;
   std::cout << A_U << std::endl;
   std::cout << "A_V =" << std::endl;
@@ -290,7 +294,7 @@ int main(int argc, char *argv[])
   std::cout << F_funct(guess) <<std::endl;
   std::cout << "Initial Jacobian = " << std::endl;
   std::cout << J_funct(guess);
-  // #endif
+  #endif
 
   newton_raphson(F_funct,J_funct,guess,pow(10,-17));
 
