@@ -277,15 +277,15 @@ int main(int argc, char *argv[])
 
   #ifdef DEBUG
   std::cout << "A_U =" << std::endl;
-  std::cout << A_U << std::endl;
+  std::cout << MatrixXd(A_U) << std::endl;
   std::cout << "A_V =" << std::endl;
-  std::cout << A_V << std::endl;
+  std::cout << MatrixXd(A_V) << std::endl;
   std::cout << "B =" << std::endl;
-  std::cout << B << std::endl;
+  std::cout << MatrixXd(B) << std::endl;
   std::cout << "C =" << std::endl;
-  std::cout << C << std::endl;
+  std::cout << MatrixXd(C) << std::endl;
   std::cout << "D =" << std::endl;
-  std::cout << D << std::endl;
+  std::cout << MatrixXd(D) << std::endl;
   std::cout << "u_0" << std::endl;
   std::cout << u_0 << std::endl;
   std::cout << "v_0" << std::endl;
@@ -293,8 +293,13 @@ int main(int argc, char *argv[])
   std::cout << "Initial function value = " << std::endl;
   std::cout << F_funct(guess) <<std::endl;
   std::cout << "Initial Jacobian = " << std::endl;
+<<<<<<< HEAD
   std::cout << J_funct(guess);
   #endif
+=======
+  std::cout << MatrixXd(J_funct(guess));
+  // #endif
+>>>>>>> 804eda344ff149812bd26387c7c6bc16ac12e51f
 
   newton_raphson(F_funct,J_funct,guess,pow(10,-17));
 
