@@ -1,6 +1,6 @@
 #include <iostream>
 #include <Eigen/SparseCore>
-// #include <Eigen/SparseLU>
+#include <Eigen/SparseLU>
 #include <Eigen/SparseCholesky>
 #include <Eigen/Dense>
 #include <chrono>
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-  SimplicialLDLT<SpMat> solver;
+  SparseLU<SpMat> solver;
   VectorXd guess(vertices.rows()*2);
   SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
   SpMat T2 = A_V+hv*C;
