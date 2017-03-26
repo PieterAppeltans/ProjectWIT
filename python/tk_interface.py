@@ -76,10 +76,11 @@ def next2(file_,area,angle,matlab,compile,version):
         except:
             tkMessageBox.showerror("Error", "An error occured during mesh generation")
         try:
-            subprocess.call(["bash","execute_cpp.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
             if version == "dense":
+                print "Executing cpp dense version"
                 subprocess.call(["bash","execute_cpp_dense.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
             elif version == "sparse":
+                print "Executing cpp sparse version"
                 subprocess.call(["bash","execute_cpp_sparse.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
         except:
             tkMessageBox.showerror("Error","An error occured during calculation")
