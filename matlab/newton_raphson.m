@@ -8,7 +8,7 @@ function [ u,v ] = newton_raphson( F,J,u0,v0,tol )
     x = [u;v];
     N = size(u0,1);
     it = 0;
-    while(res>tol && it<50)
+    while(res>tol && it<150)
         disp(res)
         x_prev = x;
         x = x-(J(u,v)\F(u,v));

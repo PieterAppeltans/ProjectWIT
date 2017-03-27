@@ -57,18 +57,19 @@ def next2(file_,area,angle,matlab,compile,version):
         mesh_field.destroy()
     except:
         tkMessageBox.showerror("Error", "Please enter a floating point number")
-    #try:
-    subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
-    vertices,elements = parse_input(FILE+".1")
-    mesh_plot = MeshPlot(vertices,elements,master=root)
-    root.update()
-    #except:
-    #    tkMessageBox.showerror("Error", "An error occured during mesh generation")
-
     mesh_plot = False
+    try:
+        subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
+        vertices,elements = parse_input(FILE+".1")
+        mesh_plot = MeshPlot(vertices,elements,master=root)
+        root.update()
+    except:
+        tkMessageBox.showerror("Error", "An error occured during mesh generation")
+
+
     if matlab:
         write_matlab(FILE,vertices,elements)
-        subprocess.call(["matlab","-nojvm","< fem.m"],cwd="../matlab")
+        subprocess.call(["matlab","-nojvm -nodisplay",'-r "GUI_FEM(%f,%f,%f);exit"'%(TEMP,NU,NV)],cwd="../matlab")
     else:
         if compile:
             if version == "dense":
@@ -86,9 +87,9 @@ def next2(file_,area,angle,matlab,compile,version):
                 subprocess.call(["bash","execute_cpp_sparse.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
         except:
             tkMessageBox.showerror("Error","An error occured during calculation")
-        if mesh_plot:
-            mesh_plot.destroy()
-        plot = ResultPlot(vertices,elements,master=root)
+    if mesh_plot:
+        mesh_plot.destroy()
+    plot = ResultPlot(vertices,elements,master=root)
 
 
 class LoadingScreen(Frame):

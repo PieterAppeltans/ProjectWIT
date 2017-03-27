@@ -1,10 +1,10 @@
-filename = "pear.1"
+filename = "circle.1"
 vi = open(filename+'.node','r')
 vo = open('vertices.dat','w')
 ti = open(filename+'.ele','r')
 to = open('triangles.dat','w')
 pi = open(filename+'.poly','r')
-po = open('boundary.dat','w')
+po = open('boundaries.dat','w')
 vertices = []
 for line in vi:
 	arr = line.split()

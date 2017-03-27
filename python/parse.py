@@ -19,7 +19,7 @@ def parse_input(filename):
 		arr = line.split()
 		t = arr[1:3]
 		for l in range(0,2):
-			t[l] = float(t[l])
+			t[l] = float(t[l])/1000
 
 		vertices = np.append(vertices,np.array([t]),axis=0)
 	ti_lines = ti.readlines()
@@ -39,7 +39,7 @@ def write_matlab(filename,vertices,elements):
 	pi = open('../triangle/'+ filename + '.1.poly','r')
 	vo = open('../matlab/vertices.dat','w')
 	to = open('../matlab/triangles.dat','w')
-	po = open('../matlab/boundary.dat','w')
+	po = open('../matlab/boundaries.dat','w')
 	pi_lines = pi.readlines()
 	for v in vertices:
 		v_str = np.char.mod('%f', v)

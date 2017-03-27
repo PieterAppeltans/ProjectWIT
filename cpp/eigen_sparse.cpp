@@ -114,6 +114,7 @@ class J
 
 int main(int argc, char *argv[])
 {
+  std::cout << "Sparse" << std::endl;
   setConstants(atof(argv[2])+273.15,atof(argv[3])/100,atof(argv[4])/100);
   auto t1 = std::chrono::high_resolution_clock::now();
   std::string file_name = argv[1];
@@ -293,13 +294,9 @@ int main(int argc, char *argv[])
   std::cout << "Initial function value = " << std::endl;
   std::cout << F_funct(guess) <<std::endl;
   std::cout << "Initial Jacobian = " << std::endl;
-<<<<<<< HEAD
   std::cout << J_funct(guess);
   #endif
-=======
-  std::cout << MatrixXd(J_funct(guess));
-  // #endif
->>>>>>> 804eda344ff149812bd26387c7c6bc16ac12e51f
+
 
   newton_raphson(F_funct,J_funct,guess,pow(10,-17));
 
