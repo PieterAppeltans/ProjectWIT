@@ -114,8 +114,10 @@ class J
 
 int main(int argc, char *argv[])
 {
-  std::cout << "Sparse" << std::endl;
+  std::cout << std::endl;
+  std::cout << "Setting constants ..." << std::endl;
   setConstants(atof(argv[2])+273.15,atof(argv[3])/100,atof(argv[4])/100);
+
   auto t1 = std::chrono::high_resolution_clock::now();
   std::string file_name = argv[1];
   std::string location = "../triangle/"+ file_name +".1";
@@ -124,6 +126,7 @@ int main(int argc, char *argv[])
   MatrixXi boundaries = mesh::read_boundaries(vertices,location+".poly");
   auto t2 = std::chrono::high_resolution_clock::now();
 
+  std::cout << std::endl;
   std::cout << "Input data successfully read:" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -152,6 +155,7 @@ int main(int argc, char *argv[])
   B_init *= (1./60.);
   SpMat B = B_init.selfadjointView<Eigen::Upper>();
   t2 = std::chrono::high_resolution_clock::now();
+  std::cout << std::endl;
   std::cout << "B matrix successfully assembled" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -210,6 +214,7 @@ int main(int argc, char *argv[])
   SpMat A_U = A_U_init.selfadjointView<Eigen::Upper>();
   SpMat A_V = A_V_init.selfadjointView<Eigen::Upper>();
   t2 = std::chrono::high_resolution_clock::now();
+  std::cout << std::endl;
   std::cout << "A matrices assembled." << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -233,8 +238,7 @@ int main(int argc, char *argv[])
   }
 
   t2 = std::chrono::high_resolution_clock::now();
-
-  std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+  std::cout << std::endl;
   std::cout << "C matrix and D vector assembled." << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -250,6 +254,7 @@ int main(int argc, char *argv[])
   F F_funct(A_U, A_V, B, C, D);
   J J_funct(A_U, A_V, B, C, D);
   t2 = std::chrono::high_resolution_clock::now();
+  std::cout << std::endl;
   std::cout << "Functors are created" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -260,10 +265,8 @@ int main(int argc, char *argv[])
   SpMat T1 = A_U+(Vmu/Kmu)*B+hu*C;
   SpMat T2 = A_V+hv*C;
 
-
   solver.analyzePattern(T1);
   solver.factorize(T1);
-  std::cout << "Checkpoint" << std::endl;
   VectorXd u_0 = solver.solve(hu*D*uamb);
   solver.analyzePattern(T2);
   solver.factorize(T2);
@@ -271,6 +274,7 @@ int main(int argc, char *argv[])
 
   guess << u_0,v_0;
   t2 = std::chrono::high_resolution_clock::now();
+  std::cout << std::endl;
   std::cout<< "Initial guess calculated" << std::endl;
   std::cout << "This took: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -297,15 +301,32 @@ int main(int argc, char *argv[])
   std::cout << J_funct(guess);
   #endif
 
-
+  std::cout << std::endl;
+  std::cout<< "Calculating nonlinear system solution ..." << std::endl;
+  t1 = std::chrono::high_resolution_clock::now();
   newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  t2 = std::chrono::high_resolution_clock::now();
+
+  std::cout<< "Numerical solution nonlinear system calculated" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
 
   /* Write out the result for python matplotlib code */
 
+  t1 = std::chrono::high_resolution_clock::now();
   int n = vertices.rows();
   VectorXd u = guess.head(n);
   VectorXd v = guess.tail(n);
   mesh::write_result(u,v);
+  t2 = std::chrono::high_resolution_clock::now();
+
+  std::cout << std::endl;
+  std::cout<< "Results for u and v written out" << std::endl;
+  std::cout << "This took: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+            << " milliseconds" << std::endl;
+  std::cout << std::endl;
 
   return 0;
 }

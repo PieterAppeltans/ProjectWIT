@@ -10,7 +10,7 @@ matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-simulation_options = {"1 Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],
+simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],
     "Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder innducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
 TEMP = 0.
 NU = 0.
@@ -25,7 +25,7 @@ class Header(Frame):
         self.title = Label(self,text="Pear Project",font="Helvetica 16 bold")
         self.title.pack({"side": "top"})
 
-        self.subtitle = Label(self,text="Set simulation conditions",font="Helvetica 10")
+        self.subtitle = Label(self,text="Simulate for various conditions, with various code versions",font="Helvetica 10")
         self.subtitle.pack({"side": "top"})
 
     def __init__(self, master=None):
@@ -59,6 +59,7 @@ def next2(file_,area,angle,matlab,compile,version):
         tkMessageBox.showerror("Error", "Please enter a floating point number")
     mesh_plot = False
     try:
+        print "=== CREATING MESH ====\n"
         subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
         vertices,elements = parse_input(FILE+".1")
         mesh_plot = MeshPlot(vertices,elements,master=root)
@@ -74,16 +75,16 @@ def next2(file_,area,angle,matlab,compile,version):
         if compile:
             if version == "dense":
                 subprocess.call(["bash","compile_cpp_dense.sh"],cwd=None)
-                print "Dense version compiled"
+                print "\n=== DENSE VERSION COMPILED ==="
             elif version == "sparse":
                 subprocess.call(["bash","compile_cpp_sparse.sh"],cwd=None)
-                print "Sparse version compiled"
+                print "\n=== SPARSE VERSION COMPILED ==="
         try:
             if version == "dense":
-                print "Executing cpp dense version"
+                print "\n=== EXECUTING DENSE VERSION CPP ==="
                 subprocess.call(["bash","execute_cpp_dense.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
             elif version == "sparse":
-                print "Executing cpp sparse version"
+                print "\n=== EXECUTING SPARSE VERSION CPP ==="
                 subprocess.call(["bash","execute_cpp_sparse.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
         except:
             tkMessageBox.showerror("Error","An error occured during calculation")
@@ -126,7 +127,7 @@ class ResultPlot(Frame):
         global FILE
         def __init__(self,vertices,elements, master=None):
             Frame.__init__(self,master)
-            self.pack()
+            self.pack(fill=BOTH, expand=YES)
             self.create_plot(vertices,elements)
         def create_plot(self,vertices,elements):
             u,v = parse_u_v()
@@ -170,7 +171,7 @@ class ResultPlot(Frame):
             canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
 
             canvas._tkcanvas.pack(side="top", fill="both", expand=1)
-            print "done"
+            print "\n=== DONE ==="
 
 
 class MeshField(Frame):
@@ -184,7 +185,7 @@ class MeshField(Frame):
         self.label_version = Label(self, text="Choose cpp version:")
         self.label_version.grid(row=0)
         self.version = StringVar(self)
-        self.version.set("dense") # default value
+        self.version.set("sparse") # default value
 
         self.version_menu = OptionMenu(self, self.version,"sparse","dense")
         self.version_menu.grid(row=0,column=1)
@@ -195,7 +196,7 @@ class MeshField(Frame):
         self.mesh = StringVar(self)
         self.mesh.set("pear") # default value
 
-        self.mesh_menu = OptionMenu(self, self.mesh,"pear", "circle")
+        self.mesh_menu = OptionMenu(self, self.mesh,"pear", "circle", "piriform")
         self.mesh_menu.grid(row=1,column=1)
 
         self.label_area = Label(self, text="Area:")

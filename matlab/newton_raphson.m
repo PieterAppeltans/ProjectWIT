@@ -17,6 +17,5 @@ function [ u,v ] = newton_raphson( F,J,u0,v0,tol )
         res = norm(x-x_prev);
         it = it+1;
     end
- 
-end
 
+end
