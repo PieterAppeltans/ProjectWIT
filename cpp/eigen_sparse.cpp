@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
 {
   std::cout << std::endl;
   std::cout << "Setting constants ..." << std::endl;
+  int quasi = atoi(argv[5]);
   setConstants(atof(argv[2])+273.15,atof(argv[3])/100,atof(argv[4])/100);
 
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -304,7 +305,14 @@ int main(int argc, char *argv[])
   std::cout << std::endl;
   std::cout<< "Calculating nonlinear system solution ..." << std::endl;
   t1 = std::chrono::high_resolution_clock::now();
-  newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  if (quasi==0)
+  {
+    newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  }
+  else
+  {
+    quasi_newton_raphson(F_funct,J_funct,guess,pow(10,-17));
+  }
   t2 = std::chrono::high_resolution_clock::now();
 
   std::cout<< "Numerical solution nonlinear system calculated" << std::endl;

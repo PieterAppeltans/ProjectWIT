@@ -59,6 +59,6 @@ u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
 Fx = @(x) norm(F(x(1:nb_vertices),x(nb_vertices+1:end)));
-[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-13));
+[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-11));
 
 make_contour_figure(vertices,u,v)

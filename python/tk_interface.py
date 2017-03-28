@@ -47,8 +47,8 @@ def next1(temp,nu,nv):
         tkMessageBox.showerror("Error", "Please enter a floating point number")
 
 
-def next2(file_,area,angle,matlab,compile,version):
-    global AREA,ANGLE,FILE,TEMP,NU,NV
+def next2(file_,area,angle,compile,version):
+    global AREA,ANGLE,FILE,TEMP,NU,NV,plot
     try:
         AREA = float(area)
         ANGLE = float(angle)
@@ -66,17 +66,12 @@ def next2(file_,area,angle,matlab,compile,version):
         root.update()
     except:
         tkMessageBox.showerror("Error", "An error occured during mesh generation")
-
-
-    if matlab:
-        write_matlab(FILE,vertices,elements)
-        subprocess.call(["matlab","-nojvm -nodisplay",'-r "GUI_FEM(%f,%f,%f);exit"'%(TEMP,NU,NV)],cwd="../matlab")
     else:
         if compile:
             if version == "dense":
                 subprocess.call(["bash","compile_cpp_dense.sh"],cwd=None)
                 print "\n=== DENSE VERSION COMPILED ==="
-            elif version == "sparse":
+            elif version == "sparse" or version == "quasi sparse":
                 subprocess.call(["bash","compile_cpp_sparse.sh"],cwd=None)
                 print "\n=== SPARSE VERSION COMPILED ==="
         try:
@@ -85,12 +80,24 @@ def next2(file_,area,angle,matlab,compile,version):
                 subprocess.call(["bash","execute_cpp_dense.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
             elif version == "sparse":
                 print "\n=== EXECUTING SPARSE VERSION CPP ==="
-                subprocess.call(["bash","execute_cpp_sparse.sh",FILE,str(TEMP),str(NU),str(NV)],cwd=None)
+                subprocess.call(["bash","execute_cpp_sparse.sh",FILE,str(TEMP),str(NU),str(NV),str(0)],cwd=None)
+            elif version == "sparse quasi":
+                print "\n=== EXECUTING SPARSE VERSION CPP WITH QUASI NEWTON ==="
+                subprocess.call(["bash","execute_cpp_sparse.sh",FILE,str(TEMP),str(NU),str(NV),str(1)],cwd=None)
+            elif version == "matlab":
+                print "\n=== EXECUTING MATLAB (DENSE) ==="
+                write_matlab(FILE,vertices,elements)
+                subprocess.call(["matlab","-nojvm -nodisplay",'-r "GUI_FEM(%f,%f,%f);exit"'%(TEMP,NU,NV)],cwd="../matlab")
         except:
             tkMessageBox.showerror("Error","An error occured during calculation")
     if mesh_plot:
         mesh_plot.destroy()
     plot = ResultPlot(vertices,elements,master=root)
+
+def next3():
+        global plot,input_field
+        plot.destroy()
+        input_field = InputField(master=root)
 
 
 class LoadingScreen(Frame):
@@ -171,6 +178,8 @@ class ResultPlot(Frame):
             canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
 
             canvas._tkcanvas.pack(side="top", fill="both", expand=1)
+            self.button = Button(self, text='Back to start',command=lambda: next3())
+            self.button.pack({"side": "bottom"})
             print "\n=== DONE ==="
 
 
@@ -185,9 +194,9 @@ class MeshField(Frame):
         self.label_version = Label(self, text="Choose cpp version:")
         self.label_version.grid(row=0)
         self.version = StringVar(self)
-        self.version.set("sparse") # default value
+        self.version.set("sparse quasi") # default value
 
-        self.version_menu = OptionMenu(self, self.version,"sparse","dense")
+        self.version_menu = OptionMenu(self, self.version,"sparse quasi","sparse","dense","matlab")
         self.version_menu.grid(row=0,column=1)
 
 
@@ -196,7 +205,7 @@ class MeshField(Frame):
         self.mesh = StringVar(self)
         self.mesh.set("pear") # default value
 
-        self.mesh_menu = OptionMenu(self, self.mesh,"pear", "circle", "piriform")
+        self.mesh_menu = OptionMenu(self, self.mesh,"pear", "circle")
         self.mesh_menu.grid(row=1,column=1)
 
         self.label_area = Label(self, text="Area:")
@@ -204,10 +213,6 @@ class MeshField(Frame):
 
         self.label_area.grid(row=2)
         self.label_angle.grid(row=3)
-
-        self.matlab = BooleanVar()
-        self.matlab_check = Checkbutton(self, text="Run with Matlab instead", variable=self.matlab)
-        self.matlab_check.grid(row=4)
 
         self.compile = BooleanVar()
         self.compile_menu = Checkbutton(self, text="Compile c++", variable=self.compile)
@@ -226,7 +231,7 @@ class MeshField(Frame):
         self.entry_angle.grid(row=3,column=1)
 
         self.button = Button(self, text='Next',command=lambda: next2(self.mesh.get(),self.area.get(),
-            self.angle.get(),self.matlab.get(),self.compile.get(),self.version.get()))
+            self.angle.get(),self.compile.get(),self.version.get()))
         self.button.grid(row=5)
 
 
