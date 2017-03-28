@@ -29,7 +29,6 @@ def parse_input(filename):
 		for i in range(0,len(s)):
 			s[i] = int(s[i])-1
 		elements = np.append(elements,np.array([s]),axis=0)
-	print elements
 	vi.close()
 	ti.close()
 

@@ -61,7 +61,7 @@ J = @(u,v) [[A_u+B*dRudu(u,v, Vmu,Kmu,Kmv)+hu*C B*dRudv(u,v, Vmu,Kmu,Kmv)];[-B*d
 u_0 = (A_u+(Vmu/Kmu)*B+hu*C)\(hu*D*Cu_amb);
 v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 
-[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-13));
+[u,v] = newton_raphson( F,J,u_0,v_0,5*10^(-11));
 
 save('../triangle/result_u.out','u','-ascii')
 save('../triangle/result_v.out','v','-ascii')
