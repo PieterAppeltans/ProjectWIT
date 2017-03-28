@@ -61,8 +61,8 @@ def next2(file_,area,angle,matlab,compile,version):
     try:
         subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
         vertices,elements = parse_input(FILE+".1")
-        mesh_plot = MeshPlot(vertices,elements,master=root)
-        root.update()
+        #mesh_plot = MeshPlot(vertices,elements,master=root)
+        #root.update()
     except:
         tkMessageBox.showerror("Error", "An error occured during mesh generation")
 
