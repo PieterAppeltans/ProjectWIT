@@ -44,6 +44,8 @@ Now, those coefficient matrices are very sparse. Especially for very fine meshes
 
 Additionally, instead of Newton-Raphson, a quasi-Newton-Rapshon method can be used. By calculating the Jacobian only once and never recalculating it, the calculation time is reduced by another factor of 5. This comes with a big but: if the mesh isn't fine enough, it will have trouble converging. A smarter implementation would combine both and refrain from calculating the Jacobian until it detects trouble converging. However, this falls out of the scope of the assignment.
 
+Because of these two speedups, the implementation has no problem with running for a mesh with 10000 triangles or more. 
+
 For easier demonstration, a graphical user interface was made using tkinter and matplotlib. It allows setting the temperature and concentration conditions, mesh generation requirements and the figure to mesh, and which FEM method to use. It shows a contourplot. 
 
 ## The repository
