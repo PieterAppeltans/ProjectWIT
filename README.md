@@ -28,6 +28,6 @@ using a circle/sphere as figure and fem.m as solver.
 The mesh folder contains the triangle package, bash scripts to generate meshes, Python scripts to generate figures
 to be meshed, and calculated meshes (*.1.*).
 
-# Theory (FEM)
+## Theory (FEM)
 
 Derivation of the FEM method for this specific problem, on which all implemented methods are based.
