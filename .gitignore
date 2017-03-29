@@ -30,6 +30,8 @@
 
 # Matlab temporary files
 *.m~
+*.dat
+*.mn~
 
 # Temporary triangle files
 *.ele~

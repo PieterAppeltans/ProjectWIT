@@ -121,9 +121,9 @@ namespace mesh
     {
       std::ofstream output_u;
       std::ofstream output_v;
-      output_u.open("../triangle/result_u.out");
+      output_u.open("../mesh/result_u.out");
       output_u << u;
-      output_v.open("../triangle/result_v.out");
+      output_v.open("../mesh/result_v.out");
       output_v << v;
       output_u.close();
       output_v.close();

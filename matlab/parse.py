@@ -1,13 +1,17 @@
-filename = "circle.1"
+# Script to store mesh data in three .dat files for (manual, not gui) Matlab fem.m
+
+filename = "../mesh/circle.1"
 vi = open(filename+'.node','r')
 vo = open('vertices.dat','w')
 ti = open(filename+'.ele','r')
 to = open('triangles.dat','w')
 pi = open(filename+'.poly','r')
 po = open('boundaries.dat','w')
+
 vertices = []
-for line in vi:
-	arr = line.split()
+nb_vertices = int(next(vi).split()[0])
+for i in range(nb_vertices):
+	arr = next(vi).split()
 	t = arr[1:3]
 	for l in range(0,2):
 		t[l] = str(float(t[l])/1000)
@@ -16,13 +20,18 @@ for line in vi:
 	vo.write(s)
 	vo.write("\n")
 
-for line in ti:
-	arr = line.split()
+vertices = []
+nb_triangles = int(next(ti).split()[0])
+for i in range(nb_triangles):
+	arr = next(ti).split()
 	s = " ".join(arr[1:])
 	to.write(s)
 	to.write("\n")
-for line in pi:
-	arr = line.split()
+
+vertices = []
+nb_lines = int(next(pi).split()[0])
+for i in range(nb_lines):
+	arr = next(pi).split()
 	print (float(vertices[int(arr[1])-1][0]) <= 10**-15) and (float(vertices[int(arr[2])-1][0]) <= 10**-15)
 	if not (float(vertices[int(arr[1])-1][0]) <= 10**-15 and float(vertices[int(arr[2])-1][0]) <= 10**-15):
 		s = " ".join(arr[1:3])
