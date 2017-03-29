@@ -38,6 +38,7 @@
 *.1.ele
 *.1.node
 *.1.poly
+*.1.edge
 
 # Python
 *.py~
