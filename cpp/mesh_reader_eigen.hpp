@@ -46,7 +46,7 @@ namespace mesh
         return vertices;
     }
 
-    MatrixXd read_triangles(MatrixXd &vertices,std::string location)
+    MatrixXd read_triangles(MatrixXd& vertices,std::string location)
     {
         /* index # is triangle id, contains
         the 3 vertix id's of the corner nodes  and
@@ -81,7 +81,7 @@ namespace mesh
         return triangles;
     }
 
-    MatrixXi read_boundaries(MatrixXd &vertices,std::string location) {
+    MatrixXi read_boundaries(MatrixXd& vertices,std::string location) {
         /* index # is triangle id, contains
         the 3 vertix id's of the corner nodes  and
         the area of the triangle, calculated using

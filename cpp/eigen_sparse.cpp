@@ -14,7 +14,9 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1> VectorXd;
 
 // Compile command:
 // g++ -Wall -std=c++14 eigen_sparse.cpp -o sparse.o -I/usr/local/include/eigen3
-// run command : ./sparse.o filename
+// Run command:
+// ./sparse.o filename T(in C) eta_u(in %) eta_v(in %) 0/1 (1 for quasi-newton, 0 for newton)
+
 // u = Cu = concentration O2, v = Cv = concentration CO2
 
 

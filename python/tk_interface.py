@@ -11,7 +11,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 simulation_options = {"Custom preset":[0,0,0],"Orchard":[25,20.8,0.04],"Shelf life":[20,20.8,0],
-    "Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder innducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
+    "Refrigerator":[7,20.8,0],"Precooling":[-1,20.8,0],"Disorder inducing":[-1,2,5],"Optimal CA":[-1,2,0.7]}
 TEMP = 0.
 NU = 0.
 NV = 0.
@@ -62,8 +62,8 @@ def next2(file_,area,angle,compile,version):
         print "=== CREATING MESH ====\n"
         subprocess.call(["bash","create_mesh.sh",str(AREA),str(ANGLE),FILE],cwd=None)
         vertices,elements = parse_input(FILE+".1")
-        mesh_plot = MeshPlot(vertices,elements,master=root)
-        root.update()
+        #mesh_plot = MeshPlot(vertices,elements,master=root)
+        #root.update()
     except:
         tkMessageBox.showerror("Error", "An error occured during mesh generation")
     else:
@@ -71,7 +71,7 @@ def next2(file_,area,angle,compile,version):
             if version == "dense":
                 subprocess.call(["bash","compile_cpp_dense.sh"],cwd=None)
                 print "\n=== DENSE VERSION COMPILED ==="
-            elif version == "sparse" or version == "quasi sparse":
+            elif version == "sparse" or version == "sparse quasi":
                 subprocess.call(["bash","compile_cpp_sparse.sh"],cwd=None)
                 print "\n=== SPARSE VERSION COMPILED ==="
         try:

@@ -2,8 +2,6 @@
 #include <Eigen/Dense>
 #include <chrono>
 
-
-
 #include "mesh_reader_eigen.hpp"
 #include "constants_dense.hpp"
 #include "newton_raphson_dense.hpp"
@@ -12,11 +10,12 @@ using Eigen::MatrixXd;
 typedef Matrix<double, Dynamic, 1> VectorXd;
 
 // Compile command:
-// g++ -std=c++14 test_eigen.cpp -O3 -DNDEBUG -o test.o -I/usr/local/include/eigen3
+// g++ -std=c++14 eigen_dense.cpp -O3 -o dense.o -I/usr/local/include/eigen3
 // Run command:
-// ./test.o filename T(c) eta_u(%) eta_v(%)
+// ./dense.o filename T(in C) eta_u(in %) eta_v(in %)
 
 // u = Cu = concentration O2, v = Cv = concentration CO2
+
 
 class F
 {
