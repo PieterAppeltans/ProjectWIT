@@ -26,7 +26,7 @@ using a circle/sphere as figure and fem.m as solver.
 ## Mesh generation (triangle)
 
 The mesh folder contains the triangle package, bash scripts to generate meshes, Python scripts to generate figures
-to be meshed, and calculated meshes (*.1.*).
+to be meshed, and calculated meshes (\*.1.\*).
 
 ## Theory (FEM)
 
