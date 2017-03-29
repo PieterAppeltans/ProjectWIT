@@ -3,11 +3,11 @@ function GUI_FEM( TC,NU,NV)
 %   Detailed explanation goes here
 load('vertices.dat');
 load('triangles.dat');
-load('boundaries.dat');
+load('boundary.dat');
 
 nb_vertices = size(vertices,1);
 nb_triangles = size(triangles,1);
-nb_boundaries = size(boundaries,1);
+nb_boundary = size(boundary,1);
 
 %In te vullen
 T = TC+273.15;
@@ -49,10 +49,10 @@ for i=1:nb_triangles
     B(triangles(i,:),triangles(i,:)) = B(triangles(i,:),triangles(i,:)) + B_local(area,vertices(triangles(i,:),:));
 end
 
-for i=1:nb_boundaries
-    length = Length_edge(vertices(boundaries(i,:),:));
-    C(boundaries(i,:),boundaries(i,:)) = C(boundaries(i,:),boundaries(i,:))+ C_local(length,vertices(boundaries(i,:),:));
-    D(boundaries(i,:)) = D(boundaries(i,:)) + D_local(length,vertices(boundaries(i,:),:));
+for i=1:nb_boundary
+    length = Length_edge(vertices(boundary(i,:),:));
+    C(boundary(i,:),boundary(i,:)) = C(boundary(i,:),boundary(i,:))+ C_local(length,vertices(boundary(i,:),:));
+    D(boundary(i,:)) = D(boundary(i,:)) + D_local(length,vertices(boundary(i,:),:));
 end
 
 F = @(u,v) [A_u*u+B*Ru(u,v,Vmu,Kmu,Kmv)+hu*(C*u-D*Cu_amb);A_v*v-B*Rv(u,v,rq,Vmfv,Kmfu,Vmu,Kmu,Kmv)+hv*(C*v-D*Cv_amb)];
@@ -66,4 +66,3 @@ v_0 = (A_v+hv*C)\(rq*(Vmu/Kmu)*B*u_0+hv*D*Cv_amb);
 save('../triangle/result_u.out','u','-ascii')
 save('../triangle/result_v.out','v','-ascii')
 end
-

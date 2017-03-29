@@ -38,7 +38,7 @@ def write_matlab(filename,vertices,elements):
 	pi = open('../mesh/'+ filename + '.1.poly','r')
 	vo = open('../matlab/vertices.dat','w')
 	to = open('../matlab/triangles.dat','w')
-	po = open('../matlab/boundaries.dat','w')
+	po = open('../matlab/boundary.dat','w')
 	pi_lines = pi.readlines()
 	for v in vertices:
 		v_str = np.char.mod('%f', v)

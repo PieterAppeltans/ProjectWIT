@@ -20,11 +20,9 @@ ANGLE = 0.
 FILE_ = ""
 
 class Header(Frame):
-
     def createWidgets(self):
         self.title = Label(self,text="Pear Project",font="Helvetica 16 bold")
         self.title.pack({"side": "top"})
-
         self.subtitle = Label(self,text="Simulate for various conditions, with various code versions",font="Helvetica 10")
         self.subtitle.pack({"side": "top"})
 
@@ -32,7 +30,6 @@ class Header(Frame):
         Frame.__init__(self, master)
         self.pack()
         self.createWidgets()
-
 
 def next1(temp,nu,nv):
     global TEMP,NU,NV,input_field,mesh_field,root
@@ -45,7 +42,6 @@ def next1(temp,nu,nv):
         mesh_field = MeshField(master=root)
     except:
         tkMessageBox.showerror("Error", "Please enter a floating point number")
-
 
 def next2(file_,area,angle,compile,version):
     global AREA,ANGLE,FILE,TEMP,NU,NV,plot
@@ -99,7 +95,6 @@ def next3():
         plot.destroy()
         input_field = InputField(master=root)
 
-
 class LoadingScreen(Frame):
     def __init__(self,master=None):
         Frame.__init__(self, master)
@@ -116,6 +111,7 @@ class MeshPlot(Frame):
         Frame.__init__(self,master)
         self.pack()
         self.create_mesh(vertices,elements)
+
     def create_mesh(self,vertices,elements):
         f = Figure()
         a = f.add_subplot(111)
@@ -144,14 +140,12 @@ class ResultPlot(Frame):
             ymin = min(vertices[:,1])
             ymax = max(vertices[:,1])
 
-
             xlin = np.linspace(xmin,xmax,300)
             ylin = np.linspace(ymin,ymax,300)
 
             X,Y = np.meshgrid(xlin,ylin)
             U = scipy.interpolate.griddata(vertices,u,(X,Y),'linear');
             V = scipy.interpolate.griddata(vertices,v,(X,Y),'linear');
-
 
             f = Figure()
             a_u = f.add_subplot(121)
@@ -172,7 +166,6 @@ class ResultPlot(Frame):
 
             cbar = f.colorbar(a_v_cont)
 
-            # a tk.DrawingArea
             canvas = FigureCanvasTkAgg(f, master=self)
             canvas.show()
             canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
@@ -184,7 +177,6 @@ class ResultPlot(Frame):
 
 
 class MeshField(Frame):
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
@@ -198,7 +190,6 @@ class MeshField(Frame):
 
         self.version_menu = OptionMenu(self, self.version,"sparse quasi","sparse","dense","matlab")
         self.version_menu.grid(row=0,column=1)
-
 
         self.label_option = Label(self, text="Choose grid:")
         self.label_option.grid(row=1)
@@ -236,9 +227,7 @@ class MeshField(Frame):
 
 
 class InputField(Frame):
-
     global simulation_options
-
     def preset_changed(self,arg):
         self.temp.set(simulation_options.get(arg)[0])
         self.nu.set(simulation_options.get(arg)[1])
@@ -283,7 +272,6 @@ class InputField(Frame):
 
 
 class Footer(Frame):
-
     def createWidgets(self):
         self.footertext = Label(self,text="Pieter Appeltans & Lennart Bulteel",font="Helvetica 10")
         self.footertext.pack()
@@ -292,7 +280,6 @@ class Footer(Frame):
         Frame.__init__(self, master)
         self.pack({"side": "bottom"})
         self.createWidgets()
-
 
 root = Tk()
 root.wm_title("Pear project")

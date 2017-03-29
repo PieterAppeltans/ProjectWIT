@@ -6,7 +6,7 @@ vo = open('vertices.dat','w')
 ti = open(filename+'.ele','r')
 to = open('triangles.dat','w')
 pi = open(filename+'.poly','r')
-po = open('boundaries.dat','w')
+po = open('boundary.dat','w')
 
 vertices = []
 nb_vertices = int(next(vi).split()[0])
